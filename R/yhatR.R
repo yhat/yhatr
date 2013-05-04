@@ -89,43 +89,42 @@ yhat.deploy <- function(model_name) {
   data.frame(js)
 }
 
-#yhat.login("greg", "fCVZiLJhS95cnxOrsp5e2VSkk0GfypZqeRCntTD1nHA")
-rsp <- yhat.deploy("gregsModel")
-yhat.show_models()
-
-####sample user code####
-
-
-yhat.predict_raw("MySMSClassifier", 12, "sex boner this shit")
-yhat.predict("MySMSClassifier", 12, "sex boner this shit")
-yhat.predict("MySMSClassifier", 12, "hello")
-
-x <- 1:100
-xsq <- x^2
-y <- sin(x) + runif(length(x), -.3, .3)
-data <- data.frame(x=x, xsq=xsq, y=y)
-(fit <- randomForest(y ~ x + xsq, data=data))
-(fit <- lm(y ~ x + xsq, data=data))
-
-model.transform <- function(df) {
-  df$xsq <- df$x^2
-  df
-}
-
-model.predict <- function(x) {
-  p <- predict(fit, newdata=x)
-  data.frame("prediction"=p)
-}
-
-model.require <- function() {
-  library("randomForest")
-}
-
-
-model.predict(model.transform(data.frame(x=2)))
-
-yhat.deploy("gregsModel")
-rsp <- yhat.predict_raw("gregsModel", 16, data.frame(x=c(-10, 5)))
-yhat.predict("gregsModel", 16, data.frame(x=c(2, 5)))
-
-
+# 
+# ####sample user code####
+# #yhat.login("greg", "fCVZiLJhS95cnxOrsp5e2VSkk0GfypZqeRCntTD1nHA")
+# rsp <- yhat.deploy("gregsModel")
+# yhat.show_models()
+# 
+# yhat.predict_raw("MySMSClassifier", 12, "sex boner this shit")
+# yhat.predict("MySMSClassifier", 12, "sex boner this shit")
+# yhat.predict("MySMSClassifier", 12, "hello")
+# 
+# x <- 1:100
+# xsq <- x^2
+# y <- sin(x) + runif(length(x), -.3, .3)
+# data <- data.frame(x=x, xsq=xsq, y=y)
+# (fit <- randomForest(y ~ x + xsq, data=data))
+# (fit <- lm(y ~ x + xsq, data=data))
+# 
+# model.transform <- function(df) {
+#   df$xsq <- df$x^2
+#   df
+# }
+# 
+# model.predict <- function(x) {
+#   p <- predict(fit, newdata=x)
+#   data.frame("prediction"=p)
+# }
+# 
+# model.require <- function() {
+#   library("randomForest")
+# }
+# 
+# 
+# model.predict(model.transform(data.frame(x=2)))
+# 
+# yhat.deploy("gregsModel")
+# rsp <- yhat.predict_raw("gregsModel", 16, data.frame(x=c(-10, 5)))
+# yhat.predict("gregsModel", 16, data.frame(x=c(2, 5)))
+# 
+# 
