@@ -11,13 +11,10 @@
 \examples{
 yhat.show_models()
 # some output here
-   username className                  name version
-1      greg                 MySMSClassifier       6
-2      greg                 MySMSClassifier       7
-3      greg                 MySMSClassifier       8
-4      greg                 MySMSClassifier       9
-...
-...
-...
+#    username className                  name version
+# 1      greg                 MySMSClassifier       1
+# 2      greg                 MySMSClassifier       2
+# 3      greg                 MySMSClassifier       3
+# 4      greg                 MySMSClassifier       4
 }
 

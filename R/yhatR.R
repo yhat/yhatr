@@ -4,13 +4,10 @@ library(plyr)
 
 
 YHAT_URL <- "http://api.yhathq.com/"
-YHAT_URL = "http://0.0.0.0:8000/"
 
 AUTH <- c(
-  username = "rtest",
-  apikey = "abcd1234"
-)
-AUTH <- c(
+  username = "",
+  apike = ""
 )
 
 yhat.login <- function() {
@@ -24,13 +21,14 @@ yhat.login <- function() {
 #' @param username Your Yhat username
 #' @param apikey Your Yhat apikey
 #' 
+#' @export
 #' @examples
 #' yhat.login("hmardukas", "abcd1234")
 yhat.login <- function(username, apikey) {
-  AUTH <<- c(
+  assign("AUTH", c(
     username = username,
     apikey = apikey
-  )
+  ))
 }
 
 #' Private function for performing a GET request
@@ -41,7 +39,7 @@ yhat.get <- function(endpoint, query=c()) {
   query <- c(query, AUTH)
   query <- paste(names(query), query, collapse="&", sep="=")
   url <- paste(YHAT_URL, endpoint, "?", query, sep="")
-  GET(url)
+  httr::GET(url)
 }
 
 #' Private function for performing a POST request
@@ -52,8 +50,8 @@ yhat.post <- function(endpoint, query=c(), data) {
   query <- c(query, AUTH)
   query <- paste(names(query), query, collapse="&", sep="=")
   url <- paste(YHAT_URL, endpoint, "?", query, sep="")
-  POST(url, add_headers("Content-Type"="application/json"),
-       body = toJSON(list(
+  httr::POST(url, httr::add_headers("Content-Type"="application/json"),
+       body = rjson::toJSON(list(
          data = data)
         )
   )
@@ -63,24 +61,25 @@ yhat.post <- function(endpoint, query=c(), data) {
 #' This function queries the Yhat API and finds the models that have been deployed
 #' for your account.
 #' 
+#' @export
 #' @examples
 #' yhat.show_models()
 #' # some output here
-#'    username className                  name version
-#' 1      greg                 MySMSClassifier       6
-#' 2      greg                 MySMSClassifier       7
-#' 3      greg                 MySMSClassifier       8
-#' 4      greg                 MySMSClassifier       9
+#' #    username className                  name version
+#' # 1      greg                 MySMSClassifier       1
+#' # 2      greg                 MySMSClassifier       2
+#' # 3      greg                 MySMSClassifier       3
+#' # 4      greg                 MySMSClassifier       4
 yhat.show_models <- function() {
   rsp <- yhat.get("showmodels")
-  js <- content(rsp)
+  js <- httr::content(rsp)
   js <- lapply(js$models, function(model) {
     if (is.null(model$clasName)) {
       model$className <- ""
     }
     model
   })
-  ldply(js, data.frame)
+  plyr::ldply(js, data.frame)
 }
 
 #' Calls Yhat's REST API and returns a JSON document containing both the prediction
@@ -90,13 +89,14 @@ yhat.show_models <- function() {
 #' @param version the version number of the model you want to call
 #' @param data input data for the model
 #' 
+#' @export
 #' @examples
 #' yhat.predict_raw("irisModel", 1, iris) 
 yhat.predict_raw <- function(model_name, version, data) {
   rsp <- yhat.post("predict", c(model = model_name, 
                                 version = version),
                    data = data)
-  content(rsp)
+  httr::content(rsp)
 }
 #' Make a prediction using Yhat.
 #' 
@@ -108,6 +108,7 @@ yhat.predict_raw <- function(model_name, version, data) {
 #' @param data input data for the model
 #' 
 #' @keywords predict
+#' @export
 #' @examples
 #' yhat.predict("irisModel", 1, iris) 
 yhat.predict <- function(model_name, version, data) {
@@ -123,9 +124,15 @@ yhat.predict <- function(model_name, version, data) {
 #' 
 #' @param model_name name of your model
 #' @keywords deploy
+#' @export
 #' @examples
 #' iris$Sepal.Width_sq <- iris$Sepal.Width^2
-#' fit <- glm(I(species)=="virginica" ~ ., data=iris)
+#' fit <- glm(I(Species)=="virginica" ~ ., data=iris)
+#' 
+#' model.require <- function() {
+#'  # require("randomForest")
+#' }
+#' 
 #' model.transform <- function(df) {
 #'  df$Sepal.Width_sq <- df$Sepal.Width^2
 #'  df
@@ -133,7 +140,7 @@ yhat.predict <- function(model_name, version, data) {
 #' model.predict <- function(df) {
 #'  data.frame("prediction"=predict(fit, df, type="response"))
 #' } 
-#'
+#' yhat.login("rtest", "abcd1234")
 #' yhat.deploy("irisModel")
 yhat.deploy <- function(model_name) {
   if (length(AUTH)==0) {
@@ -145,18 +152,22 @@ yhat.deploy <- function(model_name) {
   query <- paste(names(query), query, collapse="&", sep="=")
   url <- paste(YHAT_URL, "model/R", "?", query, sep="")
   
-  rsp <- POST(url,
+  rsp <- httr::POST(url,
        body=list(
-         "model_image" = upload_file(image_file),
+         "model_image" = httr::upload_file(image_file),
          "modelname" = model_name
          )
   )
   unlink(image_file)
-  js <- content(rsp)
+  js <- httr::content(rsp)
   data.frame(js)
 }
 
 #' Quick function for setting up a basic scaffolding of functions for deploying on Yhat.
+#' 
+#' @export
+#' @examples
+#' yhat.scaffolding()
 yhat.scaffolding <- function() {
   txt <- c(
     "model_transform <- function(df) {
@@ -172,7 +183,7 @@ model_require <- function() {
   require('library2')
 }"
 )
-  con <- file("example.R", open="w")
+  con <- file("yhatExample.R", open="w")
   writeLines(txt, con)
   close(con)
 }
@@ -186,7 +197,7 @@ model_require <- function() {
 # yhat.predict_raw("MySMSClassifier", 12, "sex boner this shit")
 # yhat.predict("MySMSClassifier", 12, "sex boner this shit")
 # yhat.predict("MySMSClassifier", 12, "hello")
-# 
+# library(randomForest)
 # x <- 1:100
 # xsq <- x^2
 # y <- sin(x) + runif(length(x), -.3, .3)

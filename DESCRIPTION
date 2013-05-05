@@ -1,12 +1,19 @@
 Package: yhatR
 Type: Package
 Title: R binder for the Yhat API
-Version: 1.0
+Version: 0.1
 Date: 2013-05-03
 Author: Greg Lamp
 Maintainer: Greg Lamp <greg@yhathq.com>
 Description: yhatR let's you deploy, maintain, and invoke models via the Yhat
     REST API.
-License: What license is it under?
+Depends:
+    R (>= 2.12.0)
+Url: https://github.com/yhat/yhatR
+Imports:
+    httr,
+    rjson,
+    plyr
+License: FreeBSD
 Collate:
     'yhatR.R'

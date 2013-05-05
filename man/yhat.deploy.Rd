@@ -15,7 +15,12 @@
 }
 \examples{
 iris$Sepal.Width_sq <- iris$Sepal.Width^2
-fit <- glm(I(species)=="virginica" ~ ., data=iris)
+fit <- glm(I(Species)=="virginica" ~ ., data=iris)
+
+model.require <- function() {
+ # require("randomForest")
+}
+
 model.transform <- function(df) {
  df$Sepal.Width_sq <- df$Sepal.Width^2
  df
@@ -23,7 +28,7 @@ model.transform <- function(df) {
 model.predict <- function(df) {
  data.frame("prediction"=predict(fit, df, type="response"))
 }
-
+yhat.login("rtest", "abcd1234")
 yhat.deploy("irisModel")
 }
 \keyword{deploy}

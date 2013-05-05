@@ -3,12 +3,11 @@
 \alias{yhatR}
 \docType{package}
 \title{
-What the package does (short line)
+A package for deploying statistical models on Yhat
 ~~ package title ~~
 }
 \description{
-More about what it does (maybe more than one line)
-~~ A concise (1-5 lines) description of the package ~~
+yhatR requires you to implement 2 functions \code{\link{model.transform}} and \code{\link{model.predict}} and optionally \code{\link{model.require}}. Each function should perform the actions neccessary to generate predictions for your model. You can put anything you want in each function, so long as \code{\link{model.predict}} returns a  \code{\link{data.frame}}.
 }
 \details{
 \tabular{ll}{
@@ -16,26 +15,39 @@ Package: \tab yhatR\cr
 Type: \tab Package\cr
 Version: \tab 1.0\cr
 Date: \tab 2013-05-03\cr
-License: \tab What license is it under?\cr
+License: \tab FreeBSD\cr
 }
-~~ An overview of how to use the package, including the most important functions ~~
+This is how you use the package...
 }
 \author{
-Who wrote it
-
-Maintainer: Who to complain to <yourfault@somewhere.net>
-~~ The author and/or maintainer of the package ~~
+Greg Lamp <greg@yhathq.com>
 }
 \references{
-~~ Literature or other references for background information ~~
+  \link{http://www.yhathq.com/}
 }
-~~ Optionally other standard keywords, one per line, from file KEYWORDS in the R documentation ~~
-~~ directory ~~
 \keyword{ package }
 \seealso{
 ~~ Optional links to other man pages, e.g. ~~
 ~~ \code{\link[<pkg>:<pkg>-package]{<pkg>}} ~~
 }
 \examples{
-~~ simple examples of the most important functions ~~
+# build a quick model
+iris$Sepal.Width_sq <- iris$Sepal.Width^2
+fit <- glm(I(Species)=="virginica" ~ ., data=iris)
+
+
+model.require <- function() {
+  require("someLibrary")
+}
+
+model.transform <- function(df) {
+  df$Sepal.Width_sq <- df$Sepal.Width^2
+  df
+}
+
+model.predict <- function(df) {
+  data.frame("prediction"=predict(fit, df, type="response"))
+} 
+yhat.deploy("irisModel")
+
 }
