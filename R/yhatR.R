@@ -156,6 +156,27 @@ yhat.deploy <- function(model_name) {
   data.frame(js)
 }
 
+#' Quick function for setting up a basic scaffolding of functions for deploying on Yhat.
+yhat.scaffolding <- function() {
+  txt <- c(
+    "model_transform <- function(df) {
+  df.transformed <- transform(df, x2=x^2)
+  df.transformed
+}
+model_predict <- function(df) {
+  pred <- predict(df)
+  data.frame('myPrediction' = pred)
+}
+model_require <- function() {
+  require('library1')
+  require('library2')
+}"
+)
+  con <- file("example.R", open="w")
+  writeLines(txt, con)
+  close(con)
+}
+
 # 
 # ####sample user code####
 # #yhat.login("greg", "fCVZiLJhS95cnxOrsp5e2VSkk0GfypZqeRCntTD1nHA")
