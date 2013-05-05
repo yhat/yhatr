@@ -1,23 +1,22 @@
-\name{yhatR-package}
-\alias{yhatR-package}
+\name{yhatR}
+\alias{yhatR}
 \alias{yhatR}
 \docType{package}
 \title{
 A package for deploying statistical models on Yhat
-~~ package title ~~
 }
 \description{
-yhatR requires you to implement 2 functions \code{\link{model.transform}} and \code{\link{model.predict}} and optionally \code{\link{model.require}}. Each function should perform the actions neccessary to generate predictions for your model. You can put anything you want in each function, so long as \code{\link{model.predict}} returns a  \code{\link{data.frame}}.
+yhatR requires you to implement 2 functions \code{\link{model.transform}} and \code{\link{model.predict}} and optionally \code{\link{model.require}}. Each function should perform the actions neccessary to generate predictions for your model. You can put anything you want in each function, so long as \code{\link{model.predict}} returns a \code{\link{data.frame}}.
 }
 \details{
 \tabular{ll}{
 Package: \tab yhatR\cr
 Type: \tab Package\cr
-Version: \tab 1.0\cr
+Version: \tab 0.1\cr
 Date: \tab 2013-05-03\cr
 License: \tab FreeBSD\cr
 }
-This is how you use the package...
+See \link{http://www.yhathq.com/} for more detials.
 }
 \author{
 Greg Lamp <greg@yhathq.com>
@@ -27,8 +26,8 @@ Greg Lamp <greg@yhathq.com>
 }
 \keyword{ package }
 \seealso{
-~~ Optional links to other man pages, e.g. ~~
-~~ \code{\link[<pkg>:<pkg>-package]{<pkg>}} ~~
+  \link{http://www.yhathq.com/docs/1}
+  \link{http://www.yhathq.com/examples/}
 }
 \examples{
 # build a quick model

@@ -7,13 +7,9 @@ Author: Greg Lamp
 Maintainer: Greg Lamp <greg@yhathq.com>
 Description: yhatr let's you deploy, maintain, and invoke models via the Yhat
     REST API.
-Depends:
-    R (>= 2.12.0)
+Depends: R (>= 2.12.0)
 Url: https://github.com/yhat/yhatr
-Imports:
-    httr,
-    rjson,
-    plyr
+Imports: httr, rjson, plyr
 License: FreeBSD
-Collate:
-    'yhatr.R'
+Collate: 'yhatr.R'
+Built: R 3.0.0; ; 2013-05-05 19:41:54.179 UTC; unix

@@ -1,0 +1,9 @@
+yhat.deploy	yhat.deploy
+yhat.get	yhat.get
+yhat.login	yhat.login
+yhat.post	yhat.post
+yhat.predict	yhat.predict
+yhat.predict_raw	yhat.predict_raw
+yhat.scaffolding	yhat.scaffolding
+yhat.show_models	yhat.show_models
+yhatR	yhatR-package
