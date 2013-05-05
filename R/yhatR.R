@@ -5,10 +5,6 @@ library(plyr)
 
 YHAT_URL <- "http://api.yhathq.com/"
 
-AUTH <- c(
-  username = "",
-  apike = ""
-)
 
 yhat.login <- function() {
   username <- scan(, what="")
@@ -25,14 +21,12 @@ yhat.login <- function() {
 #' @examples
 #' yhat.login("hmardukas", "abcd1234")
 yhat.login <- function(username, apikey) {
-  assign("AUTH", c(
-    username = username,
-    apikey = apikey
-  ))
+  print("Please create yhat.config.")
 }
 
 #' Private function for performing a GET request
 yhat.get <- function(endpoint, query=c()) {
+  AUTH <- get("yhat.config")
   if (length(AUTH)==0) {
     stop("You must login. Execute yhat.login(username, apikey).")
   }
@@ -44,6 +38,7 @@ yhat.get <- function(endpoint, query=c()) {
 
 #' Private function for performing a POST request
 yhat.post <- function(endpoint, query=c(), data) {
+  AUTH <- get("yhat.config")
   if (length(AUTH)==0) {
     stop("You must login. Execute yhat.login(username, apikey).")
   }
@@ -63,6 +58,10 @@ yhat.post <- function(endpoint, query=c(), data) {
 #' 
 #' @export
 #' @examples
+#' yhat.config <- c(
+#'  username = "your username",
+#'  apikey = "your apikey"
+#' )
 #' yhat.show_models()
 #' # some output here
 #' #    username className                  name version
@@ -91,6 +90,10 @@ yhat.show_models <- function() {
 #' 
 #' @export
 #' @examples
+#' yhat.config <- c(
+#'  username = "your username",
+#'  apikey = "your apikey"
+#' )
 #' yhat.predict_raw("irisModel", 1, iris) 
 yhat.predict_raw <- function(model_name, version, data) {
   rsp <- yhat.post("predict", c(model = model_name, 
@@ -110,6 +113,10 @@ yhat.predict_raw <- function(model_name, version, data) {
 #' @keywords predict
 #' @export
 #' @examples
+#' yhat.config <- c(
+#'  username = "your username",
+#'  apikey = "your apikey"
+#' )
 #' yhat.predict("irisModel", 1, iris) 
 yhat.predict <- function(model_name, version, data) {
   raw_rsp <- yhat.predict_raw(model_name, version, data)
@@ -126,6 +133,10 @@ yhat.predict <- function(model_name, version, data) {
 #' @keywords deploy
 #' @export
 #' @examples
+#' yhat.config <- c(
+#'  username = "your username",
+#'  apikey = "your apikey"
+#' )
 #' iris$Sepal.Width_sq <- iris$Sepal.Width^2
 #' fit <- glm(I(Species)=="virginica" ~ ., data=iris)
 #' 
@@ -143,6 +154,7 @@ yhat.predict <- function(model_name, version, data) {
 #' yhat.login("rtest", "abcd1234")
 #' yhat.deploy("irisModel")
 yhat.deploy <- function(model_name) {
+  AUTH <- get("yhat.config")
   if (length(AUTH)==0) {
     stop("You must login. execute yhat.login(username, apikey).")
   }

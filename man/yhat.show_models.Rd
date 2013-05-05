@@ -9,6 +9,10 @@
   that have been deployed for your account.
 }
 \examples{
+yhat.config <- c(
+ username = "your username",
+ apikey = "your apikey"
+)
 yhat.show_models()
 # some output here
 #    username className                  name version

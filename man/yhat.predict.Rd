@@ -17,6 +17,10 @@
   response formatted as a data frame.
 }
 \examples{
+yhat.config <- c(
+ username = "your username",
+ apikey = "your apikey"
+)
 yhat.predict("irisModel", 1, iris)
 }
 \keyword{predict}

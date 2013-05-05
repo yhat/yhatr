@@ -18,6 +18,10 @@ and associated metadata.}
   containing both the prediction and associated metadata.
 }
 \examples{
+yhat.config <- c(
+ username = "your username",
+ apikey = "your apikey"
+)
 yhat.predict_raw("irisModel", 1, iris)
 }
 

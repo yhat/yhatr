@@ -14,6 +14,10 @@
   \code{\link{yhat.predict}}).
 }
 \examples{
+yhat.config <- c(
+ username = "your username",
+ apikey = "your apikey"
+)
 iris$Sepal.Width_sq <- iris$Sepal.Width^2
 fit <- glm(I(Species)=="virginica" ~ ., data=iris)
 
