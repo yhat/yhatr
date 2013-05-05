@@ -1,9 +1,12 @@
 Package: yhatR
 Type: Package
-Title: What the package does (short line)
+Title: R binder for the Yhat API
 Version: 1.0
 Date: 2013-05-03
-Author: Who wrote it
-Maintainer: Who to complain to <yourfault@somewhere.net>
-Description: More about what it does (maybe more than one line)
+Author: Greg Lamp
+Maintainer: Greg Lamp <greg@yhathq.com>
+Description: yhatR let's you deploy, maintain, and invoke models via the Yhat
+    REST API.
 License: What license is it under?
+Collate:
+    'yhatR.R'
