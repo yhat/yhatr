@@ -1,16 +1,16 @@
-\name{yhatR}
-\alias{yhatR}
-\alias{yhatR}
+\name{yhatr}
+\alias{yhatr}
+\alias{yhatr}
 \docType{package}
 \title{
 A package for deploying statistical models on Yhat
 }
 \description{
-yhatR requires you to implement 2 functions \code{\link{model.transform}} and \code{\link{model.predict}} and optionally \code{\link{model.require}}. Each function should perform the actions neccessary to generate predictions for your model. You can put anything you want in each function, so long as \code{\link{model.predict}} returns a \code{\link{data.frame}}.
+yhatr requires you to implement 2 functions \code{\link{model.transform}} and \code{\link{model.predict}} and optionally \code{\link{model.require}}. Each function should perform the actions neccessary to generate predictions for your model. You can put anything you want in each function, so long as \code{\link{model.predict}} returns a \code{\link{data.frame}}.
 }
 \details{
 \tabular{ll}{
-Package: \tab yhatR\cr
+Package: \tab yhatr\cr
 Type: \tab Package\cr
 Version: \tab 0.1\cr
 Date: \tab 2013-05-03\cr
@@ -31,6 +31,7 @@ Greg Lamp <greg@yhathq.com>
 }
 \examples{
 # build a quick model
+yhat.config <- c(username = "your username", apikey = "your apikey")
 iris$Sepal.Width_sq <- iris$Sepal.Width^2
 fit <- glm(I(Species)=="virginica" ~ ., data=iris)
 
