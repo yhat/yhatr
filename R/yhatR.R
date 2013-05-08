@@ -1,10 +1,4 @@
-library(httr)
-library(rjson)
-library(plyr)
-
-
 YHAT_URL <- "http://api.yhathq.com/"
-
 
 yhat.login <- function() {
   username <- scan(, what="")
@@ -25,6 +19,9 @@ yhat.login <- function(username, apikey) {
 }
 
 #' Private function for performing a GET request
+#' 
+#' @param endpoint /path for REST request
+#' @param query url parameters for request
 yhat.get <- function(endpoint, query=c()) {
   AUTH <- get("yhat.config")
   if (length(AUTH)==0) {
@@ -37,6 +34,10 @@ yhat.get <- function(endpoint, query=c()) {
 }
 
 #' Private function for performing a POST request
+#' 
+#' @param endpoint /path for REST request
+#' @param query url parameters for request
+#' @param data payload to be converted to raw JSON
 yhat.post <- function(endpoint, query=c(), data) {
   AUTH <- get("yhat.config")
   if (length(AUTH)==0) {

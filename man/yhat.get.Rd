@@ -4,6 +4,11 @@
 \usage{
   yhat.get(endpoint, query = c())
 }
+\arguments{
+  \item{endpoint}{/path for REST request}
+
+  \item{query}{url parameters for request}
+}
 \description{
   Private function for performing a GET request
 }

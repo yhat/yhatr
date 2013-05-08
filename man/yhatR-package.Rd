@@ -6,7 +6,7 @@
 A package for deploying statistical models on Yhat
 }
 \description{
-yhatr requires you to implement 2 functions \code{\link{model.transform}} and \code{\link{model.predict}} and optionally \code{\link{model.require}}. Each function should perform the actions neccessary to generate predictions for your model. You can put anything you want in each function, so long as \code{\link{model.predict}} returns a \code{\link{data.frame}}.
+yhatr requires you to implement 2 functions \code{model.transform} and \code{model.predict} and optionally \code{model.require}. Each function should perform the actions neccessary to generate predictions for your model. You can put anything you want in each function, so long as \code{model.predict} returns a \code{\link{data.frame}}.
 }
 \details{
 \tabular{ll}{
@@ -16,18 +16,18 @@ Version: \tab 0.1\cr
 Date: \tab 2013-05-03\cr
 License: \tab FreeBSD\cr
 }
-See \link{http://www.yhathq.com/} for more detials.
+See \url{http://www.yhathq.com/} for more detials.
 }
 \author{
 Greg Lamp <greg@yhathq.com>
 }
 \references{
-  \link{http://www.yhathq.com/}
+  \url{http://www.yhathq.com/}
 }
 \keyword{ package }
 \seealso{
-  \link{http://www.yhathq.com/docs/1}
-  \link{http://www.yhathq.com/examples/}
+  \url{http://www.yhathq.com/docs/1}
+  \url{http://www.yhathq.com/examples/}
 }
 \examples{
 # build a quick model
