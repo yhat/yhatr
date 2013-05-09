@@ -37,7 +37,7 @@ fit <- glm(I(Species)=="virginica" ~ ., data=iris)
 
 
 model.require <- function() {
-  require("someLibrary")
+  # your packages here
 }
 
 model.transform <- function(df) {

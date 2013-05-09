@@ -1,2 +1,11 @@
+paper
+.gitignore
+INSPIRATIONS
 ^.*\.Rproj$
 ^\.Rproj\.user$
+.git
+yhatr.Rproj
+README.md
+.Rproj.user
+.Rhistory
+.DS_Store
