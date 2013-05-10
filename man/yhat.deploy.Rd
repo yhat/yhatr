@@ -32,7 +32,6 @@ model.transform <- function(df) {
 model.predict <- function(df) {
  data.frame("prediction"=predict(fit, df, type="response"))
 }
-yhat.login("rtest", "abcd1234")
 yhat.deploy("irisModel")
 }
 \keyword{deploy}
