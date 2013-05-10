@@ -152,7 +152,6 @@ yhat.predict <- function(model_name, version, data) {
 #' model.predict <- function(df) {
 #'  data.frame("prediction"=predict(fit, df, type="response"))
 #' } 
-#' yhat.login("rtest", "abcd1234")
 #' yhat.deploy("irisModel")
 yhat.deploy <- function(model_name) {
   AUTH <- get("yhat.config")
