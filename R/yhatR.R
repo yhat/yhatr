@@ -144,7 +144,7 @@ yhat.predict <- function(model_name, version, data) {
 #'
 #' yhat.test(iris) 
 yhat.test <- function(data) {
-  yhat.test(yhat.transform(data))
+  model.predict(model.transform(data))
 }
 
 #' Deploy a model to Yhat's servers
