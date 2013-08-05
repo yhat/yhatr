@@ -1,4 +1,5 @@
 export(yhat.deploy)
+export(yhat.document)
 export(yhat.login)
 export(yhat.predict)
 export(yhat.predict_raw)
