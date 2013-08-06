@@ -124,33 +124,6 @@ yhat.predict <- function(model_name, version, data) {
   data.frame(raw_rsp$prediction)
 }
 
-#' Mimics how a prediction will be made on Yhat's servers.
-#' 
-#' This function performs the same operations that \link{yhat.predict}
-#' but does so locally.
-#' 
-#' @param data input data for the model
-#' 
-#' @keywords predict local
-#' @export
-#' @examples
-#' model.transform <- function(df) {
-#'   df$Sepal.Length_sq <- df$Sepal.Length ^ 2
-#'   df
-#' }
-#' model.predict <- function(df) {
-#'   df
-#' }
-#'
-#' yhat.test(iris) 
-yhat.test <- function(data) {
-  if (exists("model.predict") & exists("model.transform")) {
-    model.predict(model.transform(data))    
-  } else {
-    print("You need to define 'model.transform' and 'model.predict'.")
-  }
-}
-
 #' Deploy a model to Yhat's servers
 #' 
 #' This function takes model.transform and model.predict and creates
