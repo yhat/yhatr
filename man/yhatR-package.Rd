@@ -26,8 +26,9 @@ Greg Lamp <greg@yhathq.com>
 }
 \keyword{ package }
 \seealso{
-  \url{http://www.yhathq.com/docs/1}
-  \url{http://www.yhathq.com/examples/}
+  \url{http://yhathq.com/docs/lang/r}
+  \url{http://yhathq.com/docs/sample-apps}
+  \url{http://yhathq.com/docs/quickstarts/r}
 }
 \examples{
 # build a quick model

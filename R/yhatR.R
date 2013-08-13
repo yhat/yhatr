@@ -52,6 +52,26 @@ yhat.post <- function(endpoint, query=c(), data) {
         )
   )
 }
+
+#' Private function for checking the size of the user's image.
+#' 
+check.image.size <- function() {
+  total.img.size <- 0
+  for (obj in ls()) {
+    obj.size <- object.size(get(obj))*9.53674e-7#convert to MB
+    total.img.size <- total.img.size + obj.size
+    if (obj.size > 20) {
+      msg <- paste("Object: ", obj, " is pretty big. Are you sure you want to send it to Yhat?", sep="")
+#       print(msg)
+    }
+  }
+  total.img.mb <- total.img.size[1]
+  if (total.img.mb > 50) {
+    stop("Sorry, your model is too big for a free account.
+         Try removing some large objects from your workspace using the rm() command.")
+  }
+}
+
 #' Shows which models you have deployed on Yhat.
 #' 
 #' This function queries the Yhat API and finds the models that have been deployed
@@ -154,6 +174,7 @@ yhat.predict <- function(model_name, version, data) {
 #' } 
 #' yhat.deploy("irisModel")
 yhat.deploy <- function(model_name) {
+  check.image.size()
   AUTH <- get("yhat.config")
   if (length(AUTH)==0) {
     stop("You must login. execute yhat.login(username, apikey).")
