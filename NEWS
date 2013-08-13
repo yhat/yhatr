@@ -1,10 +1,16 @@
+Version 0.3
+-------------------------------------------------------------------------
+
+NEW FEATURES
+
+* prevent sending too much data to Yhat
+
 Version 0.2
 -------------------------------------------------------------------------
 
 NEW FEATURES
 
 * automatic documentation
-* prevent sending too much data to Yhat
 
 Version 0.1
 -------------------------------------------------------------------------
