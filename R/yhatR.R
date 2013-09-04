@@ -27,9 +27,17 @@ yhat.get <- function(endpoint, query=c()) {
   if (length(AUTH)==0) {
     stop("You must login. Execute yhat.login(username, apikey).")
   }
+
+  if ("env" %in% names(AUTH)) {
+    url <- AUTH[["env"]]
+    AUTH <- AUTH[!names(AUTH)=="env"]
+  } else {
+    url <- YHAT_URL
+  }
+
   query <- c(query, AUTH)
   query <- paste(names(query), query, collapse="&", sep="=")
-  url <- paste(YHAT_URL, endpoint, "?", query, sep="")
+  url <- paste(url, endpoint, "?", query, sep="")
   httr::GET(url)
 }
 
@@ -43,9 +51,17 @@ yhat.post <- function(endpoint, query=c(), data) {
   if (length(AUTH)==0) {
     stop("You must login. Execute yhat.login(username, apikey).")
   }
+
+  if ("env" %in% names(AUTH)) {
+    url <- AUTH[["env"]]
+    AUTH <- AUTH[!names(AUTH)=="env"]
+  } else {
+    url <- YHAT_URL
+  }
+
   query <- c(query, AUTH)
   query <- paste(names(query), query, collapse="&", sep="=")
-  url <- paste(YHAT_URL, endpoint, "?", query, sep="")
+  url <- paste(url, endpoint, "?", query, sep="")
   httr::POST(url, httr::add_headers("Content-Type"="application/json"),
        body = rjson::toJSON(list(
          data = data)
@@ -179,11 +195,19 @@ yhat.deploy <- function(model_name) {
   if (length(AUTH)==0) {
     stop("You must login. execute yhat.login(username, apikey).")
   }
+
+  if ("env" %in% names(AUTH)) {
+    url <- AUTH[["env"]]
+    AUTH <- AUTH[!names(AUTH)=="env"]
+  } else {
+    url <- YHAT_URL
+  }
+
   image_file <- ".yhatdeployment.img"
   save.image(image_file)
   query <- AUTH
   query <- paste(names(query), query, collapse="&", sep="=")
-  url <- paste(YHAT_URL, "model/R", "?", query, sep="")
+  url <- paste(url, "model/R", "?", query, sep="")
   
   rsp <- httr::POST(url,
        body=list(
@@ -275,11 +299,19 @@ yhat.document <- function(model, version, df) {
   if (length(AUTH)==0) {
     stop("You must login. execute yhat.login(username, apikey).")
   }
+
+  if ("env" %in% names(AUTH)) {
+    url <- AUTH[["env"]]
+    AUTH <- AUTH[!names(AUTH)=="env"]
+  } else {
+    url <- YHAT_URL
+  }
+
   query <- AUTH
   query["model"] <- model
   query["version"] <- version
   query <- paste(names(query), query, collapse="&", sep="=")
-  url <- paste(YHAT_URL, "document", "?", query, sep="")
+  url <- paste(url, "document", "?", query, sep="")
   
   
   rsp <- httr::POST(url, httr::add_headers("Content-Type"="application/json"),

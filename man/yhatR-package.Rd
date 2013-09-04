@@ -12,8 +12,6 @@ yhatr requires you to implement 2 functions \code{model.transform} and \code{mod
 \tabular{ll}{
 Package: \tab yhatr\cr
 Type: \tab Package\cr
-Version: \tab 0.1\cr
-Date: \tab 2013-05-03\cr
 License: \tab FreeBSD\cr
 }
 See \url{http://www.yhathq.com/} for more detials.
