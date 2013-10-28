@@ -195,20 +195,21 @@ yhat.deploy <- function(model_name) {
   if (length(AUTH)==0) {
     stop("You must login. execute yhat.login(username, apikey).")
   }
-
   if ("env" %in% names(AUTH)) {
     url <- AUTH[["env"]]
     AUTH <- AUTH[!names(AUTH)=="env"]
+    query <- AUTH
+    query <- paste(names(query), query, collapse="&", sep="=")
+    url <- paste(url, "model", "?", query, sep="")
   } else {
     url <- YHAT_URL
+    query <- AUTH
+    query <- paste(names(query), query, collapse="&", sep="=")
+    url <- paste(url, "model/R", "?", query, sep="")
   }
-
+  
   image_file <- ".yhatdeployment.img"
   save.image(image_file)
-  query <- AUTH
-  query <- paste(names(query), query, collapse="&", sep="=")
-  url <- paste(url, "model/R", "?", query, sep="")
-  
   rsp <- httr::POST(url,
        body=list(
          "model_image" = httr::upload_file(image_file),
