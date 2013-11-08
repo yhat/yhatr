@@ -110,7 +110,7 @@ yhat.show_models <- function() {
   rsp <- yhat.get("showmodels")
   js <- httr::content(rsp)
   js <- lapply(js$models, function(model) {
-    if (is.null(model$clasName)) {
+    if (is.null(model$className)) {
       model$className <- ""
     }
     model
@@ -133,7 +133,13 @@ yhat.show_models <- function() {
 #' )
 #' yhat.predict_raw("irisModel", 1, iris) 
 yhat.predict_raw <- function(model_name, version, data) {
-  rsp <- yhat.post("predict", c(model = model_name, 
+  AUTH <- get("yhat.config")
+  if ("env" %in% names(AUTH)) {
+    endpoint <- paste("models", model_name, "", sep="/")
+  } else {
+    endpoint <- "predict"
+  }
+  rsp <- yhat.post(endpoint, c(model = model_name, 
                                 version = version),
                    data = data)
   httr::content(rsp)
@@ -157,7 +163,11 @@ yhat.predict_raw <- function(model_name, version, data) {
 #' yhat.predict("irisModel", 1, iris) 
 yhat.predict <- function(model_name, version, data) {
   raw_rsp <- yhat.predict_raw(model_name, version, data)
-  data.frame(raw_rsp$prediction)
+  if ("prediction" %in% raw_rsp) {
+    data.frame(raw_rsp$prediction)
+  } else {
+    data.frame(raw_rsp)
+  }
 }
 
 #' Deploy a model to Yhat's servers
