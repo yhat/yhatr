@@ -200,7 +200,7 @@ yhat.predict <- function(model_name, version, data) {
 #' } 
 #' yhat.deploy("irisModel")
 yhat.deploy <- function(model_name) {
-  if ("env" %in% get("yhat.config") {
+  if ("env" %in% get("yhat.config")) {
     # do nothing
   } else {
     check.image.size()
