@@ -228,7 +228,7 @@ yhat.deploy <- function(model_name) {
   
   image_file <- ".yhatdeployment.img"
   save.image(image_file)
-  rsp <- httr::POST(url,
+  rsp <- httr::POST(url, httr::authenticate(AUTH["username"], AUTH["apikey"], 'basic'),
        body=list(
          "model_image" = httr::upload_file(image_file),
          "modelname" = model_name
