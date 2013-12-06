@@ -55,22 +55,18 @@ yhat.post <- function(endpoint, query=c(), data) {
   if ("env" %in% names(AUTH)) {
     url <- AUTH[["env"]]
     AUTH <- AUTH[!names(AUTH)=="env"]
-    query <- c(query, AUTH)
-    query <- paste(names(query), query, collapse="&", sep="=")
-    url <- paste(url, endpoint, "?", query, sep="")
-    httr::POST(url, httr::authenticate(AUTH["username"], AUTH["apikey"], 'basic'),
-               body = data)
   } else {
     url <- YHAT_URL
-    query <- c(query, AUTH)
-    query <- paste(names(query), query, collapse="&", sep="=")
-    url <- paste(url, endpoint, "?", query, sep="")
-    httr::POST(url, httr::add_headers("Content-Type"="application/json"),
-               body = rjson::toJSON(list(
-                 data = data)
-               )
-    )
   }
+
+  query <- c(query, AUTH)
+  query <- paste(names(query), query, collapse="&", sep="=")
+  url <- paste(url, endpoint, "?", query, sep="")
+  httr::POST(url, httr::add_headers("Content-Type"="application/json"),
+       body = rjson::toJSON(list(
+         data = data)
+        )
+  )
 }
 
 #' Private function for checking the size of the user's image.
@@ -139,7 +135,7 @@ yhat.show_models <- function() {
 yhat.predict_raw <- function(model_name, version, data) {
   AUTH <- get("yhat.config")
   if ("env" %in% names(AUTH)) {
-    endpoint <- paste(AUTH["username"], "models", model_name, "", sep="/")
+    endpoint <- paste("models", model_name, "", sep="/")
   } else {
     endpoint <- "predict"
   }
@@ -218,7 +214,7 @@ yhat.deploy <- function(model_name) {
     AUTH <- AUTH[!names(AUTH)=="env"]
     query <- AUTH
     query <- paste(names(query), query, collapse="&", sep="=")
-    url <- paste(url, "deployer/model", "?", query, sep="")
+    url <- paste(url, "model", "?", query, sep="")
   } else {
     url <- YHAT_URL
     query <- AUTH
