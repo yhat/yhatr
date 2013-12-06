@@ -219,24 +219,34 @@ yhat.deploy <- function(model_name) {
     query <- AUTH
     query <- paste(names(query), query, collapse="&", sep="=")
     url <- paste(url, "deployer/model", "?", query, sep="")
+    image_file <- ".yhatdeployment.img"
+    save.image(image_file)
+    rsp <- httr::POST(url, httr::authenticate(AUTH["username"], AUTH["apikey"], 'basic'),
+         body=list(
+           "model_image" = httr::upload_file(image_file),
+           "modelname" = model_name
+           )
+    )
+    unlink(image_file)
+    js <- httr::content(rsp)
+    data.frame(js)
   } else {
     url <- YHAT_URL
     query <- AUTH
     query <- paste(names(query), query, collapse="&", sep="=")
     url <- paste(url, "model/R", "?", query, sep="")
+    image_file <- ".yhatdeployment.img"
+    save.image(image_file)
+    rsp <- httr::POST(url,
+         body=list(
+           "model_image" = httr::upload_file(image_file),
+           "modelname" = model_name
+           )
+    )
+    unlink(image_file)
+    js <- httr::content(rsp)
+    data.frame(js)
   }
-  
-  image_file <- ".yhatdeployment.img"
-  save.image(image_file)
-  rsp <- httr::POST(url, httr::authenticate(AUTH["username"], AUTH["apikey"], 'basic'),
-       body=list(
-         "model_image" = httr::upload_file(image_file),
-         "modelname" = model_name
-         )
-  )
-  unlink(image_file)
-  js <- httr::content(rsp)
-  data.frame(js)
 }
 
 #' Quick function for setting up a basic scaffolding of functions for deploying on Yhat.
