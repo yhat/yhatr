@@ -38,7 +38,7 @@ yhat.get <- function(endpoint, query=c()) {
   query <- c(query, AUTH)
   query <- paste(names(query), query, collapse="&", sep="=")
   url <- paste(url, endpoint, "?", query, sep="")
-  httr::GET(url)
+  httr::GET(url, httr::authenticate(AUTH["username"], AUTH["apikey"], 'basic'))
 }
 
 #' Private function for performing a POST request
