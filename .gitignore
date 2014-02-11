@@ -3,6 +3,7 @@
 .Rhistory
 .RData
 ..Rcheck/*
+man/..Rcheck/*
 .Rcheck/*
 *.tar.gz
 *.swp
