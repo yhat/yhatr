@@ -1,4 +1,3 @@
-YHAT_URL <- "http://api.yhathq.com/"
 
 yhat.login <- function() {
   username <- scan(, what="")
@@ -31,14 +30,13 @@ yhat.get <- function(endpoint, query=c()) {
   if ("env" %in% names(AUTH)) {
     url <- AUTH[["env"]]
     AUTH <- AUTH[!names(AUTH)=="env"]
+    query <- c(query, AUTH)
+    query <- paste(names(query), query, collapse="&", sep="=")
+    url <- paste(url, endpoint, "?", query, sep="")
+    httr::GET(url, httr::authenticate(AUTH["username"], AUTH["apikey"], 'basic'))
   } else {
-    url <- YHAT_URL
+    print("Please specify 'env' parameter in yhat.config.")
   }
-
-  query <- c(query, AUTH)
-  query <- paste(names(query), query, collapse="&", sep="=")
-  url <- paste(url, endpoint, "?", query, sep="")
-  httr::GET(url, httr::authenticate(AUTH["username"], AUTH["apikey"], 'basic'))
 }
 
 #' Private function for performing a POST request
@@ -61,15 +59,7 @@ yhat.post <- function(endpoint, query=c(), data) {
     httr::POST(url, httr::authenticate(AUTH["username"], AUTH["apikey"], 'basic'),
                body = data)
   } else {
-    url <- YHAT_URL
-    query <- c(query, AUTH)
-    query <- paste(names(query), query, collapse="&", sep="=")
-    url <- paste(url, endpoint, "?", query, sep="")
-    httr::POST(url, httr::add_headers("Content-Type"="application/json"),
-               body = rjson::toJSON(list(
-                 data = data)
-               )
-    )
+    print("Please specify 'env' parameter in yhat.config.")
   }
 }
 
@@ -231,22 +221,27 @@ yhat.deploy <- function(model_name) {
     js <- httr::content(rsp)
     data.frame(js)
   } else {
-    url <- YHAT_URL
-    query <- AUTH
-    query <- paste(names(query), query, collapse="&", sep="=")
-    url <- paste(url, "model/R", "?", query, sep="")
-    image_file <- ".yhatdeployment.img"
-    save.image(image_file)
-    rsp <- httr::POST(url,
-         body=list(
-           "model_image" = httr::upload_file(image_file),
-           "modelname" = model_name
-           )
-    )
-    unlink(image_file)
-    js <- httr::content(rsp)
-    data.frame(js)
+    print("Please specify 'env' parameter in yhat.config.")
   }
+}
+
+
+
+yhat.deploy.to.file <- function(model_name) {
+  AUTH <- get("yhat.config")
+  username <- AUTH[["username"]]
+  f <- ".yhatdeployment.img"
+  save.image(f)
+  img <- RCurl::base64Encode(readBin(f, "raw", file.info(f)[1,"size"]))
+  data <- list(
+    image=img[1],
+    modelName=model_name,
+    className=model_name,
+    username=username,
+    language="r"
+  )
+  base::write(rjson::toJSON(data), file=paste(model_name, ".yhat", sep=""))
+  paste("file written to :", paste(model_name, ".yhat", sep=""))
 }
 
 #' Quick function for setting up a basic scaffolding of functions for deploying on Yhat.
@@ -332,22 +327,22 @@ yhat.document <- function(model, version, df) {
   if ("env" %in% names(AUTH)) {
     url <- AUTH[["env"]]
     AUTH <- AUTH[!names(AUTH)=="env"]
-  } else {
-    url <- YHAT_URL
-  }
 
-  query <- AUTH
-  query["model"] <- model
-  query["version"] <- version
-  query <- paste(names(query), query, collapse="&", sep="=")
-  url <- paste(url, "document", "?", query, sep="")
-  
-  
-  rsp <- httr::POST(url, httr::add_headers("Content-Type"="application/json"),
-             body = rjson::toJSON(list(
-               docs = docs)
-             ))
-  httr::content(rsp)
+    query <- AUTH
+    query["model"] <- model
+    query["version"] <- version
+    query <- paste(names(query), query, collapse="&", sep="=")
+    url <- paste(url, "document", "?", query, sep="")
+    
+    
+    rsp <- httr::POST(url, httr::add_headers("Content-Type"="application/json"),
+               body = rjson::toJSON(list(
+                 docs = docs)
+               ))
+    httr::content(rsp)
+  } else {
+    print("Please specify 'env' parameter in yhat.config.")
+  }
 }
 
 
