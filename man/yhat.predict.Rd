@@ -19,7 +19,9 @@ yhat.config <- c(
  apikey = "your apikey",
  env = "http://cloud.yhathq.com/"
 )
+\dontrun{
 yhat.predict("irisModel", iris)
+}
 }
 \keyword{predict}
 

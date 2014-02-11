@@ -19,6 +19,8 @@ yhat.config <- c(
  username = "your username",
  apikey = "your apikey"
 )
+\dontrun{
 yhat.predict_raw("irisModel", iris)
+}
 }
 

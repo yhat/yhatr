@@ -76,7 +76,9 @@ check.image.size <- function() {
 #'  apikey = "your apikey",
 #'  env = "http://cloud.yhathq.com/"
 #' )
+#' \dontrun{
 #' yhat.show_models()
+#' }
 #' # some output here
 #' #    username className                  name version
 #' # 1      greg                 MySMSClassifier       1
@@ -107,7 +109,9 @@ yhat.show_models <- function() {
 #'  username = "your username",
 #'  apikey = "your apikey"
 #' )
+#' \dontrun{
 #' yhat.predict_raw("irisModel", iris) 
+#' }
 yhat.predict_raw <- function(model_name, data) {
   AUTH <- get("yhat.config")
   if ("env" %in% names(AUTH)) {
@@ -135,7 +139,9 @@ yhat.predict_raw <- function(model_name, data) {
 #'  apikey = "your apikey",
 #'  env = "http://cloud.yhathq.com/"
 #' )
+#' \dontrun{
 #' yhat.predict("irisModel", iris) 
+#' }
 yhat.predict <- function(model_name, data) {
   raw_rsp <- yhat.predict_raw(model_name, data)
   if ("prediction" %in% raw_rsp) {
@@ -173,8 +179,10 @@ yhat.predict <- function(model_name, data) {
 #' }
 #' model.predict <- function(df) {
 #'  data.frame("prediction"=predict(fit, df, type="response"))
-#' } 
+#' }
+#' \dontrun{
 #' yhat.deploy("irisModel")
+#' }
 yhat.deploy <- function(model_name) {
   check.image.size()
   AUTH <- get("yhat.config")
@@ -231,7 +239,7 @@ yhat.deploy <- function(model_name) {
 #' }
 #' model.predict <- function(df) {
 #'  data.frame("prediction"=predict(fit, df, type="response"))
-#' } 
+#' }
 #' yhat.deploy.to.file("irisModel")
 yhat.deploy.to.file <- function(model_name) {
   AUTH <- get("yhat.config")

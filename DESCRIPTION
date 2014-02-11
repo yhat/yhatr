@@ -12,6 +12,7 @@ Depends:
 URL: https://github.com/yhat/yhatr
 Imports:
     httr,
+    RCurl,
     rjson,
     plyr
 License: FreeBSD
