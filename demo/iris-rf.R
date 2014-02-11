@@ -17,17 +17,15 @@ model.transform <- function(df) {
 model.predict <- function(df) {
   data.frame("prediction"=predict(fit, df, type="response"))
 }
-yhat.config <- c(username = "your username", apikey = "your apikey")
+yhat.config <- c(username = "your username", apikey = "your apikey", env = "http://cloud.yhathq.com/")
 (deployment <- yhat.deploy("irisModel"))
 
-active_version <- deployment[1,]$version
-
 predict(fit, iris[1,])
-yhat.predict("irisModel", active_version, iris[1,])
+yhat.predict("irisModel", iris[1,])
 
 results <- ldply(1:nrow(iris), function(i) {
   data.frame(idx=i,
-             yhat=yhat.predict("irisModel", active_version, iris[i,])$prediction,
+             yhat=yhat.predict("irisModel", iris[i,])$prediction,
              local=predict(fit, iris[i,]))
 })
 

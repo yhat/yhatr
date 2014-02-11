@@ -13,12 +13,10 @@ model.transform <- function(df) {
 model.predict <- function(df) {
   data.frame("prediction"=predict(fit, df, type="response"))
 }
-yhat.config <- c(username = "your username", apikey = "your apikey")
+yhat.config <- c(username = "your username", apikey = "your apikey", env="http://cloud.yhathq.com")
 
 deployment <- yhat.deploy("irisModel")
 
-active_version <- deployment[1,]$version
-
 lapply(1:nrow(iris), function(i) {
-  print(yhat.predict("irisModel", active_version, iris[i,]))
+  print(yhat.predict("irisModel", iris[i,]))
 })
