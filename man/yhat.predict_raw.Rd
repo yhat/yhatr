@@ -3,13 +3,10 @@
 \title{Calls Yhat's REST API and returns a JSON document containing both the prediction
 and associated metadata.}
 \usage{
-  yhat.predict_raw(model_name, version, data)
+  yhat.predict_raw(model_name, data)
 }
 \arguments{
   \item{model_name}{the name of the model you want to call}
-
-  \item{version}{the version number of the model you want
-  to call}
 
   \item{data}{input data for the model}
 }
@@ -22,6 +19,6 @@ yhat.config <- c(
  username = "your username",
  apikey = "your apikey"
 )
-yhat.predict_raw("irisModel", 1, iris)
+yhat.predict_raw("irisModel", iris)
 }
 

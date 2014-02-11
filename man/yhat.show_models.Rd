@@ -11,7 +11,8 @@
 \examples{
 yhat.config <- c(
  username = "your username",
- apikey = "your apikey"
+ apikey = "your apikey",
+ env = "http://cloud.yhathq.com/"
 )
 yhat.show_models()
 # some output here

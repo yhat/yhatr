@@ -1,22 +1,3 @@
-
-yhat.login <- function() {
-  username <- scan(, what="")
-  apikey <- scan(, what="")
-  yhat.login(username, apikey)
-}
-
-#' A function for logging into Yhat's api.
-#' 
-#' @param username Your Yhat username
-#' @param apikey Your Yhat apikey
-#' 
-#' @export
-#' @examples
-#' yhat.login("hmardukas", "abcd1234")
-yhat.login <- function(username, apikey) {
-  print("Please create yhat.config.")
-}
-
 #' Private function for performing a GET request
 #' 
 #' @param endpoint /path for REST request
@@ -24,7 +5,7 @@ yhat.login <- function(username, apikey) {
 yhat.get <- function(endpoint, query=c()) {
   AUTH <- get("yhat.config")
   if (length(AUTH)==0) {
-    stop("You must login. Execute yhat.login(username, apikey).")
+    stop("Please specify your account credentials using yhat.config.")
   }
 
   if ("env" %in% names(AUTH)) {
@@ -47,7 +28,7 @@ yhat.get <- function(endpoint, query=c()) {
 yhat.post <- function(endpoint, query=c(), data) {
   AUTH <- get("yhat.config")
   if (length(AUTH)==0) {
-    stop("You must login. Execute yhat.login(username, apikey).")
+    stop("Please specify your account credentials using yhat.config.")
   }
 
   if ("env" %in% names(AUTH)) {
@@ -77,8 +58,9 @@ check.image.size <- function() {
   }
   total.img.mb <- total.img.size[1]
   if (total.img.mb > 50) {
-    stop("Sorry, your model is too big for a free account.
-         Try removing some large objects from your workspace using the rm() command.")
+    stop("Sorry, your model is too big to deploy via HTTP.
+         Try removing some large objects from your workspace using the rm() command, or
+         deploy the model using yhat.deploy.to.file.")
   }
 }
 
@@ -91,7 +73,8 @@ check.image.size <- function() {
 #' @examples
 #' yhat.config <- c(
 #'  username = "your username",
-#'  apikey = "your apikey"
+#'  apikey = "your apikey",
+#'  env = "http://cloud.yhathq.com/"
 #' )
 #' yhat.show_models()
 #' # some output here
@@ -116,7 +99,6 @@ yhat.show_models <- function() {
 #' and associated metadata.
 #' 
 #' @param model_name the name of the model you want to call
-#' @param version the version number of the model you want to call
 #' @param data input data for the model
 #' 
 #' @export
@@ -125,16 +107,15 @@ yhat.show_models <- function() {
 #'  username = "your username",
 #'  apikey = "your apikey"
 #' )
-#' yhat.predict_raw("irisModel", 1, iris) 
-yhat.predict_raw <- function(model_name, version, data) {
+#' yhat.predict_raw("irisModel", iris) 
+yhat.predict_raw <- function(model_name, data) {
   AUTH <- get("yhat.config")
   if ("env" %in% names(AUTH)) {
     endpoint <- paste(AUTH["username"], "models", model_name, "", sep="/")
   } else {
-    endpoint <- "predict"
+    stop("Please specify an env.")
   }
-  rsp <- yhat.post(endpoint, c(model = model_name, 
-                                version = version),
+  rsp <- yhat.post(endpoint, c(model = model_name),
                    data = data)
   httr::content(rsp)
 }
@@ -144,7 +125,6 @@ yhat.predict_raw <- function(model_name, version, data) {
 #' data frame.
 #' 
 #' @param model_name the name of the model you want to call
-#' @param version the version number of the model you want to call
 #' @param data input data for the model
 #' 
 #' @keywords predict
@@ -152,11 +132,12 @@ yhat.predict_raw <- function(model_name, version, data) {
 #' @examples
 #' yhat.config <- c(
 #'  username = "your username",
-#'  apikey = "your apikey"
+#'  apikey = "your apikey",
+#'  env = "http://cloud.yhathq.com/"
 #' )
-#' yhat.predict("irisModel", 1, iris) 
-yhat.predict <- function(model_name, version, data) {
-  raw_rsp <- yhat.predict_raw(model_name, version, data)
+#' yhat.predict("irisModel", iris) 
+yhat.predict <- function(model_name, data) {
+  raw_rsp <- yhat.predict_raw(model_name, data)
   if ("prediction" %in% raw_rsp) {
     data.frame(raw_rsp$prediction)
   } else {
@@ -176,7 +157,8 @@ yhat.predict <- function(model_name, version, data) {
 #' @examples
 #' yhat.config <- c(
 #'  username = "your username",
-#'  apikey = "your apikey"
+#'  apikey = "your apikey",
+#'  env = "http://cloud.yhathq.com/"
 #' )
 #' iris$Sepal.Width_sq <- iris$Sepal.Width^2
 #' fit <- glm(I(Species)=="virginica" ~ ., data=iris)
@@ -194,14 +176,10 @@ yhat.predict <- function(model_name, version, data) {
 #' } 
 #' yhat.deploy("irisModel")
 yhat.deploy <- function(model_name) {
-  if ("env" %in% get("yhat.config")) {
-    # do nothing
-  } else {
-    check.image.size()
-  }
+  check.image.size()
   AUTH <- get("yhat.config")
   if (length(AUTH)==0) {
-    stop("You must login. execute yhat.login(username, apikey).")
+    stop("Please specify your account credentials using yhat.config.")
   }
   if ("env" %in% names(AUTH)) {
     url <- AUTH[["env"]]
@@ -226,7 +204,35 @@ yhat.deploy <- function(model_name) {
 }
 
 
-
+#' Deploy a model to a file that you can then upload via the browser.
+#' 
+#' This function creates a .yhat file which can be deployed via the browser.
+#' This is useful for larger models (>20 MB).
+#' 
+#' @param model_name name of your model
+#' @keywords deploy
+#' @export
+#' @examples
+#' yhat.config <- c(
+#'  username = "your username",
+#'  apikey = "your apikey",
+#'  env = "http://cloud.yhathq.com/"
+#' )
+#' iris$Sepal.Width_sq <- iris$Sepal.Width^2
+#' fit <- glm(I(Species)=="virginica" ~ ., data=iris)
+#' 
+#' model.require <- function() {
+#'  # require("randomForest")
+#' }
+#' 
+#' model.transform <- function(df) {
+#'  df$Sepal.Width_sq <- df$Sepal.Width^2
+#'  df
+#' }
+#' model.predict <- function(df) {
+#'  data.frame("prediction"=predict(fit, df, type="response"))
+#' } 
+#' yhat.deploy.to.file("irisModel")
 yhat.deploy.to.file <- function(model_name) {
   AUTH <- get("yhat.config")
   username <- AUTH[["username"]]
@@ -268,81 +274,3 @@ model_require <- function() {
   writeLines(txt, con)
   close(con)
 }
-
-#' Documents a column from a given data.frame
-#' 
-#' Generates documentation for a column.
-#' @param df the data.farme frame you're documenting
-#' @param col the column as a string that you're documenting
-documentColumn <- function(df, col) {
-  doc <- list()
-  doc[["name"]] <- col
-  doc[["dtype"]] <- ifelse(is.numeric(df[,col]), "number",
-                           ifelse(is.factor(df[,col]), "factor",
-                                  "something else"))
-  if (doc[["dtype"]]=="number") {
-    step <- abs(max(df[,col], na.rm=T) - min(df[,col], na.rm=T) )/ 10 + 0.01
-    doc[["step"]] <- 10^round(log10(step) - log10(5.5) + 0.5)
-    doc[["placeholder"]] <- median(df[,col], na.rm=T)
-  } else if(doc[["dtype"]]=="factor") {
-    factorLevels <- list()
-    levs <- sort(levels(df[,col]))
-    doc[["levels"]] <- lapply(levs, I)
-  } else {
-    doc[["placeholder"]] <- "your text here"
-  }
-  doc
-}
-
-#' Private method for generating documentation for a data frame
-#' 
-#' Documents a data frame using the \link{documentColumn} function.
-#' @param data the data.frame you're documenting
-documentData <- function(data) {
-  docs <- list()
-  for(col in names(data)) {
-    docs[[length(docs)+1]] <- documentColumn(data, col)
-  }
-  docs
-}
-
-#' Document a model using Yhat
-#' 
-#' Takes a specific model along with data that is required to execute a prediction
-#' and generates a webapp/documentation.
-#' 
-#' @param model name of your model
-#' @param version version of your model
-#' @param df example data for your model
-#' @keywords document
-#' @export
-yhat.document <- function(model, version, df) {
-  docs <- documentData(df)
-  
-  AUTH <- get("yhat.config")
-  if (length(AUTH)==0) {
-    stop("You must login. execute yhat.login(username, apikey).")
-  }
-
-  if ("env" %in% names(AUTH)) {
-    url <- AUTH[["env"]]
-    AUTH <- AUTH[!names(AUTH)=="env"]
-
-    query <- AUTH
-    query["model"] <- model
-    query["version"] <- version
-    query <- paste(names(query), query, collapse="&", sep="=")
-    url <- paste(url, "document", "?", query, sep="")
-    
-    
-    rsp <- httr::POST(url, httr::add_headers("Content-Type"="application/json"),
-               body = rjson::toJSON(list(
-                 docs = docs)
-               ))
-    httr::content(rsp)
-  } else {
-    print("Please specify 'env' parameter in yhat.config.")
-  }
-}
-
-

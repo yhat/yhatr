@@ -1,17 +1,16 @@
-\name{yhat.deploy}
-\alias{yhat.deploy}
-\title{Deploy a model to Yhat's servers}
+\name{yhat.deploy.to.file}
+\alias{yhat.deploy.to.file}
+\title{Deploy a model to a file that you can then upload via the browser.}
 \usage{
-  yhat.deploy(model_name)
+  yhat.deploy.to.file(model_name)
 }
 \arguments{
   \item{model_name}{name of your model}
 }
 \description{
-  This function takes model.transform and model.predict and
-  creates a model on Yhat's servers which can be called
-  from any programming language via Yhat's REST API (see
-  \code{\link{yhat.predict}}).
+  This function creates a .yhat file which can be deployed
+  via the browser. This is useful for larger models (>20
+  MB).
 }
 \examples{
 yhat.config <- c(
@@ -33,7 +32,7 @@ model.transform <- function(df) {
 model.predict <- function(df) {
  data.frame("prediction"=predict(fit, df, type="response"))
 }
-yhat.deploy("irisModel")
+yhat.deploy.to.file("irisModel")
 }
 \keyword{deploy}
 
