@@ -37,8 +37,12 @@ yhat.post <- function(endpoint, query=c(), data) {
     query <- c(query, AUTH)
     query <- paste(names(query), query, collapse="&", sep="=")
     url <- paste(url, endpoint, "?", query, sep="")
-    httr::POST(url, httr::authenticate(AUTH["username"], AUTH["apikey"], 'basic'),
-               body = data)
+    httr::POST(url, body = rjson::toJSON(data),
+                    config = c(
+                      httr::authenticate(AUTH["username"], AUTH["apikey"], 'basic'),
+                      httr::add_headers("Content-Type" = "application/json")
+                      )
+              )
   } else {
     print("Please specify 'env' parameter in yhat.config.")
   }
@@ -184,6 +188,9 @@ yhat.predict <- function(model_name, data) {
 #' yhat.deploy("irisModel")
 #' }
 yhat.deploy <- function(model_name) {
+  if (length(grep("^[A-Za-z_0-9]+$", model_name))==0) {
+    stop("Model name can only contain following characters: A-Za-z_0-9")
+  }
   check.image.size()
   AUTH <- get("yhat.config")
   if (length(AUTH)==0) {
@@ -242,6 +249,9 @@ yhat.deploy <- function(model_name) {
 #' }
 #' yhat.deploy.to.file("irisModel")
 yhat.deploy.to.file <- function(model_name) {
+  if (length(grep("^[A-Za-z_0-9]+$", model_name))==0) {
+    stop("Model name can only contain following characters: A-Za-z_0-9")
+  }
   AUTH <- get("yhat.config")
   username <- AUTH[["username"]]
   f <- ".yhatdeployment.img"
