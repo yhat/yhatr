@@ -1,5 +1,5 @@
 #' Private function for performing a GET request
-#' 
+#'
 #' @param endpoint /path for REST request
 #' @param query url parameters for request
 yhat.get <- function(endpoint, query=c()) {
@@ -21,7 +21,7 @@ yhat.get <- function(endpoint, query=c()) {
 }
 
 #' Private function for performing a POST request
-#' 
+#'
 #' @param endpoint /path for REST request
 #' @param query url parameters for request
 #' @param data payload to be converted to raw JSON
@@ -49,7 +49,7 @@ yhat.post <- function(endpoint, query=c(), data) {
 }
 
 #' Private function for checking the size of the user's image.
-#' 
+#'
 check.image.size <- function() {
   total.img.size <- 0
   for (obj in ls()) {
@@ -69,10 +69,10 @@ check.image.size <- function() {
 }
 
 #' Shows which models you have deployed on Yhat.
-#' 
+#'
 #' This function queries the Yhat API and finds the models that have been deployed
 #' for your account.
-#' 
+#'
 #' @export
 #' @examples
 #' yhat.config <- c(
@@ -103,10 +103,10 @@ yhat.show_models <- function() {
 
 #' Calls Yhat's REST API and returns a JSON document containing both the prediction
 #' and associated metadata.
-#' 
+#'
 #' @param model_name the name of the model you want to call
 #' @param data input data for the model
-#' 
+#'
 #' @export
 #' @examples
 #' yhat.config <- c(
@@ -114,7 +114,7 @@ yhat.show_models <- function() {
 #'  apikey = "your apikey"
 #' )
 #' \dontrun{
-#' yhat.predict_raw("irisModel", iris) 
+#' yhat.predict_raw("irisModel", iris)
 #' }
 yhat.predict_raw <- function(model_name, data) {
   AUTH <- get("yhat.config")
@@ -128,13 +128,13 @@ yhat.predict_raw <- function(model_name, data) {
   httr::content(rsp)
 }
 #' Make a prediction using Yhat.
-#' 
+#'
 #' This function calls Yhat's REST API and returns a response formatted as a
 #' data frame.
-#' 
+#'
 #' @param model_name the name of the model you want to call
 #' @param data input data for the model
-#' 
+#'
 #' @keywords predict
 #' @export
 #' @examples
@@ -144,7 +144,7 @@ yhat.predict_raw <- function(model_name, data) {
 #'  env = "http://cloud.yhathq.com/"
 #' )
 #' \dontrun{
-#' yhat.predict("irisModel", iris) 
+#' yhat.predict("irisModel", iris)
 #' }
 yhat.predict <- function(model_name, data) {
   raw_rsp <- yhat.predict_raw(model_name, data)
@@ -156,11 +156,11 @@ yhat.predict <- function(model_name, data) {
 }
 
 #' Deploy a model to Yhat's servers
-#' 
+#'
 #' This function takes model.transform and model.predict and creates
 #' a model on Yhat's servers which can be called from any programming language
 #' via Yhat's REST API (see \code{\link{yhat.predict}}).
-#' 
+#'
 #' @param model_name name of your model
 #' @keywords deploy
 #' @export
@@ -172,11 +172,11 @@ yhat.predict <- function(model_name, data) {
 #' )
 #' iris$Sepal.Width_sq <- iris$Sepal.Width^2
 #' fit <- glm(I(Species)=="virginica" ~ ., data=iris)
-#' 
+#'
 #' model.require <- function() {
 #'  # require("randomForest")
 #' }
-#' 
+#'
 #' model.transform <- function(df) {
 #'  df$Sepal.Width_sq <- df$Sepal.Width^2
 #'  df
@@ -220,10 +220,10 @@ yhat.deploy <- function(model_name) {
 
 
 #' Deploy a model to a file that you can then upload via the browser.
-#' 
+#'
 #' This function creates a .yhat file which can be deployed via the browser.
 #' This is useful for larger models (>20 MB).
-#' 
+#'
 #' @param model_name name of your model
 #' @keywords deploy
 #' @export
@@ -235,11 +235,11 @@ yhat.deploy <- function(model_name) {
 #' )
 #' iris$Sepal.Width_sq <- iris$Sepal.Width^2
 #' fit <- glm(I(Species)=="virginica" ~ ., data=iris)
-#' 
+#'
 #' model.require <- function() {
 #'  # require("randomForest")
 #' }
-#' 
+#'
 #' model.transform <- function(df) {
 #'  df$Sepal.Width_sq <- df$Sepal.Width^2
 #'  df
@@ -254,6 +254,7 @@ yhat.deploy.to.file <- function(model_name) {
   }
   AUTH <- get("yhat.config")
   username <- AUTH[["username"]]
+  apikey <- AUTH[["apikey"]]
   f <- ".yhatdeployment.img"
   save.image(f)
   img <- RCurl::base64Encode(readBin(f, "raw", file.info(f)[1,"size"]))
@@ -262,6 +263,7 @@ yhat.deploy.to.file <- function(model_name) {
     modelName=model_name,
     className=model_name,
     username=username,
+    apikey=apikey,
     language="r"
   )
   base::write(rjson::toJSON(data), file=paste(model_name, ".yhat", sep=""))
@@ -269,7 +271,7 @@ yhat.deploy.to.file <- function(model_name) {
 }
 
 #' Quick function for setting up a basic scaffolding of functions for deploying on Yhat.
-#' 
+#'
 #' @export
 #' @examples
 #' yhat.scaffolding()
