@@ -148,8 +148,8 @@ yhat.predict_raw <- function(model_name, data) {
 #' }
 yhat.predict <- function(model_name, data) {
   raw_rsp <- yhat.predict_raw(model_name, data)
-  if ("prediction" %in% raw_rsp) {
-    data.frame(raw_rsp$prediction)
+  if ("result" %in% raw_rsp) {
+    data.frame(raw_rsp$result)
   } else {
     data.frame(raw_rsp)
   }
