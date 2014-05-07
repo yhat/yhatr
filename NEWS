@@ -1,3 +1,10 @@
+Version 0.9
+-------------------------------------------------------------------------
+
+NEW FEATURES
+
+* variables which aren't model dependencies not sent to Yhat
+
 Version 0.8
 -------------------------------------------------------------------------
 BUG FIXES
