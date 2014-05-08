@@ -2,7 +2,7 @@
 \alias{yhat.ls}
 \title{Private function for determining model dependencies}
 \usage{
-  required.var.names <- yhat.ls()
+yhat.ls()
 }
 \arguments{
 }

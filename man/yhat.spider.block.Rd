@@ -2,7 +2,7 @@
 \alias{yhat.spider.block}
 \title{Private function for recursively looking for variables}
 \usage{
-  yhat.spider.block(block, defined.vars = c(as.symbol("var1"),as.symbol("var2")))
+  yhat.spider.block(block, defined.vars)
 }
 \arguments{
   \item{block}{code block to spider}
