@@ -51,21 +51,34 @@ yhat.post <- function(endpoint, query=c(), data) {
 #' Private function for checking the size of the user's image.
 #'
 check.image.size <- function() {
-  total.img.size <- 0
+  bytes.in.a.mb <- 2 ^ 20
+  model.size <- list()
   for (obj in yhat.ls()) {
-    obj.size <- object.size(get(obj))*9.53674e-7#convert to MB
-    total.img.size <- total.img.size + obj.size
-    if (obj.size > 20) {
-      msg <- paste("Object: ", obj, " is pretty big. Are you sure you want to send it to Yhat?", sep="")
-#       print(msg)
-    }
+    model.size[[obj]] <- object.size(get(obj))
   }
-  total.img.mb <- total.img.size[1]
-  if (total.img.mb > 50) {
-    stop("Sorry, your model is too big to deploy via HTTP.
-         Try removing some large objects from your workspace using the rm() command, or
-         deploy the model using yhat.deploy.to.file.")
+  # lets get this into a data.frame
+  df <- data.frame(unlist(model.size))
+  model.size <- data.frame(obj=rownames(df),size.mb=df[[1]] / bytes.in.a.mb)
+  # how many megabytes is the image?
+  total.img.mb <- sum(model.size$size.mb)
+  max.size.mb <- 30
+  if (total.img.mb > max.size.mb) {
+    # check out my R skills brah
+    model.size.string <- paste(capture.output(model.size),collapse="\n")
+    # display object sizes to user
+    err.msg <- paste("Sorry, your model is too big to deploy via HTTP.",
+        "Try reducing the memory demand of your model (for instance convert matrices",
+        "to sparse representations instead of dense ones), or deploy the model using:",
+        "    yhat.deploy.to.file()",
+        "------------------------------",
+        "total image size (mb):",
+        total.img.mb,
+        "model dependencies:",
+        model.size.string,
+        sep="\n")
+    stop(err.msg)
   }
+  model.size
 }
 
 #' Shows which models you have deployed on Yhat.
@@ -117,15 +130,33 @@ yhat.show_models <- function() {
 #' yhat.predict_raw("irisModel", iris)
 #' }
 yhat.predict_raw <- function(model_name, data) {
+  usage <- "usage:  yhat.predict(<model_name>,<data>)"
+  if(missing(model_name)){
+    stop(paste("Please specify the model name you'd like to call",usage,sep="\n"))
+  }
+  if(missing(data)){
+    stop(paste("You didn't pass any data to predict on!",usage,sep="\n"))
+  }
   AUTH <- get("yhat.config")
   if ("env" %in% names(AUTH)) {
     endpoint <- paste(AUTH["username"], "models", model_name, "", sep="/")
   } else {
-    stop("Please specify an env.")
+    stop("Please specify an env in yhat.config")
   }
-  rsp <- yhat.post(endpoint, c(model = model_name),
-                   data = data)
-  httr::content(rsp)
+  # rsp <- yhat.post(endpoint, c(model = model_name),
+  #                  data = data)
+  model_url <- paste(AUTH[["env"]],"model/",model_name,"/",sep="")
+  error_msg <- paste("Invalid response: are you sure your model is built?\nHead over to",
+                     model_url,"to see you model's current status.")
+  tryCatch(
+    {
+      rsp <- yhat.post(endpoint, c(model = model_name),
+                       data = data)
+      httr::content(rsp)
+    },
+    error = function(e){stop(error_msg)},
+    exception = function(e){stop(error_msg)}
+  )
 }
 #' Make a prediction using Yhat.
 #'
@@ -148,11 +179,15 @@ yhat.predict_raw <- function(model_name, data) {
 #' }
 yhat.predict <- function(model_name, data) {
   raw_rsp <- yhat.predict_raw(model_name, data)
-  if ("result" %in% names(raw_rsp)) {
-    data.frame(lapply(raw_rsp$result, unlist))
-  } else {
-    data.frame(raw_rsp)
-  }
+  tryCatch({
+    if ("result" %in% names(raw_rsp)) {
+      data.frame(lapply(raw_rsp$result, unlist))
+    } else {
+      data.frame(raw_rsp)
+    }
+  },
+  error = function(e){stop("Invalid response: are you sure your model is built?")},
+  exception = function(e){stop("Invalid response: are you sure your model is built?")})
 }
 
 #' Deploy a model to Yhat's servers
@@ -188,31 +223,48 @@ yhat.predict <- function(model_name, data) {
 #' yhat.deploy("irisModel")
 #' }
 yhat.deploy <- function(model_name) {
+  if(missing(model_name)){
+    stop("Please specify 'model_name' argument")
+  }
   if (length(grep("^[A-Za-z_0-9]+$", model_name))==0) {
     stop("Model name can only contain following characters: A-Za-z_0-9")
   }
-  check.image.size()
+  img.size.mb <- check.image.size()
   AUTH <- get("yhat.config")
   if (length(AUTH)==0) {
     stop("Please specify your account credentials using yhat.config.")
   }
   if ("env" %in% names(AUTH)) {
-    url <- AUTH[["env"]]
+    env <- AUTH[["env"]]
     AUTH <- AUTH[!names(AUTH)=="env"]
     query <- AUTH
     query <- paste(names(query), query, collapse="&", sep="=")
-    url <- paste(url, "deployer/model", "?", query, sep="")
+    url <- paste(env, "deployer/model", "?", query, sep="")
     image_file <- ".yhatdeployment.img"
     save(list=yhat.ls(),file=image_file)
-    rsp <- httr::POST(url, httr::authenticate(AUTH["username"], AUTH["apikey"], 'basic'),
-         body=list(
-           "model_image" = httr::upload_file(image_file),
-           "modelname" = model_name
-           )
+    err.msg <- paste("Could not connect to yhat enterprise. Please ensure that your",
+                     "specified server is online. Contact info [at] yhathq [dot] com",
+                     "for further support.",
+                     "-----------------------",
+                     "Specified endpoint:",
+                     env,
+                     sep="\n")
+    tryCatch({
+        rsp <- httr::POST(url, httr::authenticate(AUTH["username"], AUTH["apikey"], 'basic'),
+                        body=list(
+                           "model_image" = httr::upload_file(image_file),
+                           "modelname" = model_name
+                                 )
+                         )
+      
+        js <- httr::content(rsp)
+        rsp.df <- data.frame(js)
+      },
+      error=function(e){ unlink(image_file); stop(err.msg) },
+      exception=function(e){ unlink(image_file); stop(err.msg) }
     )
     unlink(image_file)
-    js <- httr::content(rsp)
-    data.frame(js)
+    rsp.df
   } else {
     print("Please specify 'env' parameter in yhat.config.")
   }
@@ -249,6 +301,9 @@ yhat.deploy <- function(model_name) {
 #' }
 #' yhat.deploy.to.file("irisModel")
 yhat.deploy.to.file <- function(model_name) {
+  if(missing(model_name)){
+    stop("Please specify 'model_name' argument")
+  }  
   if (length(grep("^[A-Za-z_0-9]+$", model_name))==0) {
     stop("Model name can only contain following characters: A-Za-z_0-9")
   }
@@ -256,7 +311,7 @@ yhat.deploy.to.file <- function(model_name) {
   username <- AUTH[["username"]]
   apikey <- AUTH[["apikey"]]
   f <- ".yhatdeployment.img"
-  save.image(f)
+  save(list=yhat.ls(),file=f)
   img <- RCurl::base64Encode(readBin(f, "raw", file.info(f)[1,"size"]))
   data <- list(
     image=img[1],
@@ -384,7 +439,15 @@ yhat.spider.func <- function(func.name){
 yhat.ls <- function(){
     funcs <- c("model.transform","model.predict") # function queue to spider
     dependencies <- funcs
-    global.vars <- as.list(.GlobalEnv)
+    global.vars <- ls(.GlobalEnv,all.names=T)
+    # check functions
+    for (func in funcs){
+        if(!(func %in% global.vars)){
+            err.msg <- paste("ERROR: You must define \"",func,
+                             "\" before deploying a model",sep="")
+            stop(err.msg)
+        }
+    }
     while(length(funcs) > 0){
         # pop first function from queue
         func.name <- funcs[[1]]
@@ -405,7 +468,7 @@ yhat.ls <- function(){
                     dependencies <- c(var,dependencies)
                     # if this variable is a function we're going to
                     # want to spider it as well
-                    if(typeof(global.vars[[var]]) == "closure"){
+                    if(typeof(.GlobalEnv[[var]]) == "closure"){
                         # add function to function queue
                         funcs <- c(var,funcs)
                     }
@@ -413,7 +476,7 @@ yhat.ls <- function(){
             }
         }
     }
-    if("model.require" %in% names(global.vars)){
+    if("model.require" %in% global.vars){
         dependencies <- c("model.require",dependencies)
     }
     dependencies
