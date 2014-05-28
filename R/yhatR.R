@@ -81,6 +81,12 @@ check.image.size <- function() {
   model.size
 }
 
+#' Checks dependencies and makes sure all are installed.
+#' 
+check.dependencies <- function() {
+  is.function(jsonlite::validate)
+}
+
 #' Shows which models you have deployed on Yhat.
 #'
 #' This function queries the Yhat API and finds the models that have been deployed
