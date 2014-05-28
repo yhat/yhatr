@@ -4,7 +4,7 @@ Title: R binder for the Yhat API
 Version: 0.9.0
 Date: 2013-09-04
 Author: Greg Lamp <greg@yhathq.com>, Eric Chiang <eric@yhathq.com>
-Maintainer: Greg Lamp <greg@yhathq.com>
+Maintainer: Greg Lamp <greg@yhathq.com>, Eric Chiang <eric@yhathq.com>
 Description: yhatr lets you deploy, maintain, and invoke models via the Yhat
     REST API.
 Depends:
