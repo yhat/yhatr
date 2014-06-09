@@ -10,6 +10,8 @@ yhat.predict_raw(model_name, data)
 \item{model_name}{the name of the model you want to call}
 
 \item{data}{input data for the model}
+
+\item{model_owner}{the owner of the model [optional]}
 }
 \description{
 Calls Yhat's REST API and returns a JSON document containing both the prediction

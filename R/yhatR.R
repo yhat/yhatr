@@ -125,6 +125,7 @@ yhat.show_models <- function() {
 #'
 #' @param model_name the name of the model you want to call
 #' @param data input data for the model
+#' @param model_owner the owner of the model [optional]
 #'
 #' @export
 #' @examples
@@ -135,7 +136,7 @@ yhat.show_models <- function() {
 #' \dontrun{
 #' yhat.predict_raw("irisModel", iris)
 #' }
-yhat.predict_raw <- function(model_name, data) {
+yhat.predict_raw <- function(model_name, data, model_owner) {
   usage <- "usage:  yhat.predict(<model_name>,<data>)"
   if(missing(model_name)){
     stop(paste("Please specify the model name you'd like to call",usage,sep="\n"))
@@ -145,7 +146,11 @@ yhat.predict_raw <- function(model_name, data) {
   }
   AUTH <- get("yhat.config")
   if ("env" %in% names(AUTH)) {
-    endpoint <- paste(AUTH["username"], "models", model_name, "", sep="/")
+    user <- AUTH["username"]
+    if(!missing(model_owner)){
+      user <- model_owner
+    }
+    endpoint <- paste(user, "models", model_name, "", sep="/")
   } else {
     stop("Please specify an env in yhat.config")
   }
@@ -171,6 +176,7 @@ yhat.predict_raw <- function(model_name, data) {
 #'
 #' @param model_name the name of the model you want to call
 #' @param data input data for the model
+#' @param model_owner the owner of the model [optional]
 #'
 #' @keywords predict
 #' @export
@@ -183,8 +189,8 @@ yhat.predict_raw <- function(model_name, data) {
 #' \dontrun{
 #' yhat.predict("irisModel", iris)
 #' }
-yhat.predict <- function(model_name, data) {
-  raw_rsp <- yhat.predict_raw(model_name, data)
+yhat.predict <- function(model_name, data, model_owner) {
+  raw_rsp <- yhat.predict_raw(model_name, data, model_owner)
   tryCatch({
     if ("result" %in% names(raw_rsp)) {
       data.frame(lapply(raw_rsp$result, unlist))
