@@ -336,6 +336,46 @@ yhat.deploy.to.file <- function(model_name) {
   base::write(rjson::toJSON(data), file=paste(model_name, ".yhat", sep=""))
   paste("file written to :", paste(model_name, ".yhat", sep=""))
 }
+#' Deploy a model via SCP. For when you want to automate large model uploads.
+#'
+#' For when you have a really big model file and you don't want to mess with
+#' uploading it via the admin console.
+#' This is useful for larger models (>20 MB).
+#'
+#' @param model_name name of your model
+#' @keywords deploy
+#' @export
+#' @examples
+#' yhat.config <- c(
+#'  username = "your username",
+#'  apikey = "your apikey",
+#'  env = "http://google.yhathq.com/"
+#' )
+#' iris$Sepal.Width_sq <- iris$Sepal.Width^2
+#' fit <- glm(I(Species)=="virginica" ~ ., data=iris)
+#'
+#' model.require <- function() {
+#'  # require("randomForest")
+#' }
+#'
+#' model.transform <- function(df) {
+#'  df$Sepal.Width_sq <- df$Sepal.Width^2
+#'  df
+#' }
+#' model.predict <- function(df) {
+#'  data.frame("prediction"=predict(fit, df, type="response"))
+#' }
+#' yhat.deploy.with.scp("irisModel", "~/path/to/pemfile.pem")
+yhat.deploy.with.scp <- function(model_name, pem_path) {
+  yhat.deploy.to.file(model_name)
+  filename <- paste(model_name, ".yhat", sep="")
+  AUTH <- get("yhat.config")
+  servername <- AUTH[["env"]]
+
+  system(paste("scp -i ", pem_path, " ubuntu@", servername, ":~/"))
+  system(paste0("ssh -i ", pem_path, " ubuntu@", servername, " 'sudo mv ~/", filename, " /var/yhat/headquarters/uploads/'"))
+  NULL
+}
 
 #' Quick function for setting up a basic scaffolding of functions for deploying on Yhat.
 #'
