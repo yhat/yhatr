@@ -349,7 +349,7 @@ yhat.deploy.to.file <- function(model_name) {
 #' yhat.config <- c(
 #'  username = "your username",
 #'  apikey = "your apikey",
-#'  env = "http://google.yhathq.com/"
+#'  env = "http://<your-company>.yhathq.com/"
 #' )
 #' iris$Sepal.Width_sq <- iris$Sepal.Width^2
 #' fit <- glm(I(Species)=="virginica" ~ ., data=iris)
@@ -373,7 +373,8 @@ yhat.deploy.with.scp <- function(model_name, pem_path) {
   servername <- AUTH[["env"]]
 
   system(paste("scp -i ", pem_path, " ubuntu@", servername, ":~/"))
-  system(paste0("ssh -i ", pem_path, " ubuntu@", servername, " 'sudo mv ~/", filename, " /var/yhat/headquarters/uploads/'"))
+  system(paste("ssh -i ", pem_path, " ubuntu@", servername, " 'sudo mv ~/",
+               filename, " /var/yhat/headquarters/uploads/'"))
   NULL
 }
 
