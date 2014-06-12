@@ -265,7 +265,8 @@ yhat.deploy <- function(model_name) {
         rsp <- httr::POST(url, httr::authenticate(AUTH["username"], AUTH["apikey"], 'basic'),
                         body=list(
                            "model_image" = httr::upload_file(image_file),
-                           "modelname" = model_name
+                           "modelname" = model_name,
+			   "code" = capture.src()
                                  )
                          )
       
@@ -400,6 +401,25 @@ model_require <- function() {
   con <- file("yhatExample.R", open="w")
   writeLines(txt, con)
   close(con)
+}
+
+#' Private function for catpuring the source code of model
+#'
+#' @param funcs functions to caputre, defaults to required yhat model functions
+capture.src <- function(funcs){
+    if(missing(funcs)){
+        funcs <- c("model.require","model.transform","model.predict")
+    }
+    global.vars <- ls(.GlobalEnv)
+    src <- "library(yhatr)"
+    for(func in funcs){
+        if(func %in% global.vars){
+	    func.src <- paste(capture.output(.GlobalEnv[[func]]),collapse="\n")
+            func.src <- paste(func,"<-",func.src)
+            src <- paste(src,func.src,sep="\n\n")
+        }
+    }
+    src
 }
 
 #' Private function for recursively looking for variables
