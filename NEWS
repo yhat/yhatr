@@ -1,3 +1,11 @@
+Version 0.11
+------------------------------------------------------------------------
+
+NEW FEATURES
+
+* deploy over scp for large models
+* source code string now captured
+
 Version 0.10
 ------------------------------------------------------------------------
 
