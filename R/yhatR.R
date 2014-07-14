@@ -10,6 +10,9 @@ yhat.get <- function(endpoint, query=c()) {
 
   if ("env" %in% names(AUTH)) {
     url <- AUTH[["env"]]
+    url <- stringr::str_replace_all(url, "^http://", "")
+    url <- stringr::str_replace_all(url, "/$", "")
+    url <- sprintf("http://%s/", url)
     AUTH <- AUTH[!names(AUTH)=="env"]
     query <- c(query, AUTH)
     query <- paste(names(query), query, collapse="&", sep="=")
@@ -33,6 +36,9 @@ yhat.post <- function(endpoint, query=c(), data) {
 
   if ("env" %in% names(AUTH)) {
     url <- AUTH[["env"]]
+    url <- stringr::str_replace_all(url, "^http://", "")
+    url <- stringr::str_replace_all(url, "/$", "")
+    url <- sprintf("http://%s/", url)
     AUTH <- AUTH[!names(AUTH)=="env"]
     query <- c(query, AUTH)
     query <- paste(names(query), query, collapse="&", sep="=")
@@ -150,13 +156,16 @@ yhat.predict_raw <- function(model_name, data, model_owner) {
     if(!missing(model_owner)){
       user <- model_owner
     }
-    endpoint <- paste(user, "models", model_name, "", sep="/")
+    endpoint <- sprintf("%s/models/%s/", user, model_name)
   } else {
     stop("Please specify an env in yhat.config")
   }
-  # rsp <- yhat.post(endpoint, c(model = model_name),
-  #                  data = data)
-  model_url <- paste(AUTH[["env"]],"model/",model_name,"/",sep="")
+
+  # build the model url for the error message
+  url <- AUTH[["env"]]
+  url <- stringr::str_replace_all(url, "^http://", "")
+  url <- stringr::str_replace_all(url, "/$", "")
+  model_url <- sprintf("http://%s/model/%s/", url, model_name)
   error_msg <- paste("Invalid response: are you sure your model is built?\nHead over to",
                      model_url,"to see you model's current status.")
   tryCatch(
@@ -248,10 +257,12 @@ yhat.deploy <- function(model_name) {
   }
   if ("env" %in% names(AUTH)) {
     env <- AUTH[["env"]]
+    env <- stringr::str_replace_all(env, "^http://", "")
+    env <- stringr::str_replace_all(env, "/$", "")
     AUTH <- AUTH[!names(AUTH)=="env"]
     query <- AUTH
     query <- paste(names(query), query, collapse="&", sep="=")
-    url <- paste(env, "deployer/model", "?", query, sep="")
+    url <- sprintf("http://%s/deployer/model?%s", env, query)
     image_file <- ".yhatdeployment.img"
     save(list=yhat.ls(),file=image_file)
     err.msg <- paste("Could not connect to yhat enterprise. Please ensure that your",
