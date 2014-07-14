@@ -17,9 +17,38 @@ yhat.get <- function(endpoint, query=c()) {
     query <- c(query, AUTH)
     query <- paste(names(query), query, collapse="&", sep="=")
     url <- paste(url, endpoint, "?", query, sep="")
-    httr::GET(url, httr::authenticate(AUTH["username"], AUTH["apikey"], 'basic'))
+    httr::GET(url, httr::authenticate(AUTH[["username"]], AUTH[["apikey"]], 'basic'))
   } else {
     print("Please specify 'env' parameter in yhat.config.")
+  }
+}
+
+
+#' Private function for verifying username and apikey
+yhat.verify <- function() {
+  tryCatch({
+    AUTH <- get("yhat.config")
+  }, error = function(e) {
+    stop("Please define a yhat.config object")
+  })
+  env <- AUTH[["env"]]
+  env <- stringr::str_replace_all(env, "^http://", "")
+  env <- stringr::str_replace_all(env, "/$", "")
+  username <- AUTH[["username"]]
+  apikey <- AUTH[["apikey"]]
+  url <- sprintf("http://%s/verify?username=%s&apikey=%s",
+                 env, username, apikey)
+  print(url)
+  rsp <- httr::POST(url)
+  if (httr::http_status(rsp)$category != "success") {
+    stop(sprintf("Bad response from http://%s/", env))
+  }
+  status <- httr::content(rsp)$success
+  if (is.null(status)) {
+    stop("Invalid apikey/username combination!")
+  }
+  if (status != "true") {
+    stop("Invalid apikey/username combination!")
   }
 }
 
@@ -45,7 +74,7 @@ yhat.post <- function(endpoint, query=c(), data) {
     url <- paste(url, endpoint, "?", query, sep="")
     httr::POST(url, body = rjson::toJSON(data),
                     config = c(
-                      httr::authenticate(AUTH["username"], AUTH["apikey"], 'basic'),
+                      httr::authenticate(AUTH[["username"]], AUTH[["apikey"]], 'basic'),
                       httr::add_headers("Content-Type" = "application/json")
                       )
               )
@@ -152,7 +181,7 @@ yhat.predict_raw <- function(model_name, data, model_owner) {
   }
   AUTH <- get("yhat.config")
   if ("env" %in% names(AUTH)) {
-    user <- AUTH["username"]
+    user <- AUTH[["username"]]
     if(!missing(model_owner)){
       user <- model_owner
     }
@@ -250,6 +279,7 @@ yhat.deploy <- function(model_name) {
   if (length(grep("^[A-Za-z_0-9]+$", model_name))==0) {
     stop("Model name can only contain following characters: A-Za-z_0-9")
   }
+  yhat.verify()
   img.size.mb <- check.image.size()
   AUTH <- get("yhat.config")
   if (length(AUTH)==0) {
@@ -273,7 +303,7 @@ yhat.deploy <- function(model_name) {
                      env,
                      sep="\n")
     tryCatch({
-        rsp <- httr::POST(url, httr::authenticate(AUTH["username"], AUTH["apikey"], 'basic'),
+        rsp <- httr::POST(url, httr::authenticate(AUTH[["username"]], AUTH[["apikey"]], 'basic'),
                         body=list(
                            "model_image" = httr::upload_file(image_file),
                            "modelname" = model_name,
