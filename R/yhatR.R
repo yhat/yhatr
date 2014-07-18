@@ -385,6 +385,7 @@ yhat.deploy.to.file <- function(model_name) {
 #' This is useful for larger models (>20 MB).
 #'
 #' @param model_name name of your model
+#' @param pem_path path to your pemfile (for AWS)
 #' @keywords deploy
 #' @export
 #' @examples
