@@ -38,7 +38,6 @@ yhat.verify <- function() {
   apikey <- AUTH[["apikey"]]
   url <- sprintf("http://%s/verify?username=%s&apikey=%s",
                  env, username, apikey)
-  print(url)
   rsp <- httr::POST(url)
   if (httr::http_status(rsp)$category != "success") {
     stop(sprintf("Bad response from http://%s/", env))
@@ -72,6 +71,7 @@ yhat.post <- function(endpoint, query=c(), data) {
     query <- c(query, AUTH)
     query <- paste(names(query), query, collapse="&", sep="=")
     url <- paste(url, endpoint, "?", query, sep="")
+    print(url)
     httr::POST(url, body = rjson::toJSON(data),
                     config = c(
                       httr::authenticate(AUTH[["username"]], AUTH[["apikey"]], 'basic'),
@@ -199,7 +199,7 @@ yhat.predict_raw <- function(model_name, data, model_owner) {
                      model_url,"to see you model's current status.")
   tryCatch(
     {
-      rsp <- yhat.post(endpoint, c(model = model_name),
+      rsp <- yhat.post(endpoint,
                        data = data)
       httr::content(rsp)
     },
