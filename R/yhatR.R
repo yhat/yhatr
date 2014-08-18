@@ -19,7 +19,7 @@ yhat.get <- function(endpoint, query=c()) {
     url <- paste(url, endpoint, "?", query, sep="")
     httr::GET(url, httr::authenticate(AUTH[["username"]], AUTH[["apikey"]], 'basic'))
   } else {
-    print("Please specify 'env' parameter in yhat.config.")
+    message("Please specify 'env' parameter in yhat.config.")
   }
 }
 
@@ -56,7 +56,10 @@ yhat.verify <- function() {
 #' @param endpoint /path for REST request
 #' @param query url parameters for request
 #' @param data payload to be converted to raw JSON
-yhat.post <- function(endpoint, query=c(), data) {
+#' @param silent should output of url to console be silenced? 
+#' Default is \code{FALSE}.
+yhat.post <- function(endpoint, query=c(), data, silent = FALSE) {
+  if(!is.logical(silent)) stop("Argument 'silent' must be logical!")
   AUTH <- get("yhat.config")
   if (length(AUTH)==0) {
     stop("Please specify your account credentials using yhat.config.")
@@ -71,7 +74,7 @@ yhat.post <- function(endpoint, query=c(), data) {
     query <- c(query, AUTH)
     query <- paste(names(query), query, collapse="&", sep="=")
     url <- paste(url, endpoint, "?", query, sep="")
-    print(url)
+    if(!silent) message(url)
     httr::POST(url, body = rjson::toJSON(data),
                     config = c(
                       httr::authenticate(AUTH[["username"]], AUTH[["apikey"]], 'basic'),
@@ -79,7 +82,7 @@ yhat.post <- function(endpoint, query=c(), data) {
                       )
               )
   } else {
-    print("Please specify 'env' parameter in yhat.config.")
+    message("Please specify 'env' parameter in yhat.config.")
   }
 }
 
@@ -161,6 +164,8 @@ yhat.show_models <- function() {
 #' @param model_name the name of the model you want to call
 #' @param data input data for the model
 #' @param model_owner the owner of the model [optional]
+#' @param silent should output of url to console (via \code{yhat.post})
+#' be silenced? Default is \code{FALSE}.
 #'
 #' @export
 #' @examples
@@ -171,7 +176,7 @@ yhat.show_models <- function() {
 #' \dontrun{
 #' yhat.predict_raw("irisModel", iris)
 #' }
-yhat.predict_raw <- function(model_name, data, model_owner) {
+yhat.predict_raw <- function(model_name, data, model_owner, silent = FALSE) {
   usage <- "usage:  yhat.predict(<model_name>,<data>)"
   if(missing(model_name)){
     stop(paste("Please specify the model name you'd like to call",usage,sep="\n"))
@@ -199,8 +204,7 @@ yhat.predict_raw <- function(model_name, data, model_owner) {
                      model_url,"to see you model's current status.")
   tryCatch(
     {
-      rsp <- yhat.post(endpoint,
-                       data = data)
+      rsp <- yhat.post(endpoint, data = data, silent = silent)
       httr::content(rsp)
     },
     error = function(e){stop(error_msg)},
@@ -215,6 +219,8 @@ yhat.predict_raw <- function(model_name, data, model_owner) {
 #' @param model_name the name of the model you want to call
 #' @param data input data for the model
 #' @param model_owner the owner of the model [optional]
+#' @param silent should output of url to console (via \code{yhat.post})
+#' be silenced? Default is \code{FALSE}.
 #'
 #' @keywords predict
 #' @export
@@ -227,8 +233,8 @@ yhat.predict_raw <- function(model_name, data, model_owner) {
 #' \dontrun{
 #' yhat.predict("irisModel", iris)
 #' }
-yhat.predict <- function(model_name, data, model_owner) {
-  raw_rsp <- yhat.predict_raw(model_name, data, model_owner)
+yhat.predict <- function(model_name, data, model_owner, silent = FALSE) {
+  raw_rsp <- yhat.predict_raw(model_name, data, model_owner, silent = silent)
   tryCatch({
     if ("result" %in% names(raw_rsp)) {
       data.frame(lapply(raw_rsp$result, unlist))
@@ -320,7 +326,7 @@ yhat.deploy <- function(model_name) {
     unlink(image_file)
     rsp.df
   } else {
-    print("Please specify 'env' parameter in yhat.config.")
+    message("Please specify 'env' parameter in yhat.config.")
   }
 }
 
