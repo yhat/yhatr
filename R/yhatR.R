@@ -58,7 +58,7 @@ yhat.verify <- function() {
 #' @param data payload to be converted to raw JSON
 #' @param silent should output of url to console be silenced? 
 #' Default is \code{FALSE}.
-yhat.post <- function(endpoint, query=c(), data, silent = FALSE) {
+yhat.post <- function(endpoint, query=c(), data, silent = TRUE) {
   if(!is.logical(silent)) stop("Argument 'silent' must be logical!")
   AUTH <- get("yhat.config")
   if (length(AUTH)==0) {
@@ -74,7 +74,9 @@ yhat.post <- function(endpoint, query=c(), data, silent = FALSE) {
     query <- c(query, AUTH)
     query <- paste(names(query), query, collapse="&", sep="=")
     url <- paste(url, endpoint, "?", query, sep="")
-    if(!silent) message(url)
+    if(silent==FALSE) {
+      message(url)
+    }
     httr::POST(url, body = rjson::toJSON(data),
                     config = c(
                       httr::authenticate(AUTH[["username"]], AUTH[["apikey"]], 'basic'),
@@ -176,7 +178,7 @@ yhat.show_models <- function() {
 #' \dontrun{
 #' yhat.predict_raw("irisModel", iris)
 #' }
-yhat.predict_raw <- function(model_name, data, model_owner, silent = FALSE) {
+yhat.predict_raw <- function(model_name, data, model_owner, silent = TRUE) {
   usage <- "usage:  yhat.predict(<model_name>,<data>)"
   if(missing(model_name)){
     stop(paste("Please specify the model name you'd like to call",usage,sep="\n"))
@@ -233,7 +235,7 @@ yhat.predict_raw <- function(model_name, data, model_owner, silent = FALSE) {
 #' \dontrun{
 #' yhat.predict("irisModel", iris)
 #' }
-yhat.predict <- function(model_name, data, model_owner, silent = FALSE) {
+yhat.predict <- function(model_name, data, model_owner, silent = TRUE) {
   raw_rsp <- yhat.predict_raw(model_name, data, model_owner, silent = silent)
   tryCatch({
     if ("result" %in% names(raw_rsp)) {
