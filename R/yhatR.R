@@ -302,7 +302,12 @@ yhat.deploy <- function(model_name) {
     query <- paste(names(query), query, collapse="&", sep="=")
     url <- sprintf("http://%s/deployer/model?%s", env, query)
     image_file <- ".yhatdeployment.img"
-    save(list=yhat.ls(),file=image_file)
+    all_objects <- yhat.ls()
+    all_funcs <- all_objects[lapply(all_objects, function(name){
+      class(globalenv()[[name]])
+    }) == "function"]
+    save(list=all_objects,file=image_file)
+
     err.msg <- paste("Could not connect to yhat enterprise. Please ensure that your",
                      "specified server is online. Contact info [at] yhathq [dot] com",
                      "for further support.",
@@ -315,7 +320,7 @@ yhat.deploy <- function(model_name) {
                         body=list(
                            "model_image" = httr::upload_file(image_file),
                            "modelname" = model_name,
-			   "code" = capture.src()
+			   "code" = capture.src(all_funcs)
                                  )
                          )
       
@@ -470,6 +475,54 @@ capture.src <- function(funcs){
         }
     }
     src
+}
+
+#' Generates a model.transform function from an example input data.frame.
+#' Handles columns which need to be type casted further after the initial JSON
+#' to Robject such as factors and ints.
+#'
+#' @param df A data.frame object which mirrors the kind of input to the model. 
+#'
+#' @export
+#' @examples
+#' model.transform <- yhat.transform_from_example(iris)
+yhat.transform_from_example <- function(df) {
+    if(!is.data.frame(df)) {
+        stop("Input must be of class 'data.frame'")
+    }
+    # capture class types of each column
+    classes <- lapply(data, class)
+    factor_classes <- classes[classes == "factor"]
+    factor_levels <- lapply(data[names(factor_classes)], levels)
+    non_factor_classes <- classes[classes != "factor"]
+  
+    # The thing we're returning is a function
+    function(new_df) {
+        col_names <- names(new_df)
+        # factors require the levels to be set to the correct values
+        for(col_name in names(factor_levels)) {
+            if (col_name %in% col_names) {
+                new_df[[col_name]] <- factor(new_df[[col_name]], levels=factor_levels[[col_name]])
+            }    
+        }
+        # for the non factor columns, simply type cast
+        for(col_name in names(non_factor_classes)) {
+            if (col_name %in% col_names) {
+                as_type <- tryCatch({
+                    get(paste("as", non_factor_classes[[col_name]], sep="."))
+                }, error=function(cond) {
+                    # if we can't find the as.[type] function, just leave it alone
+                    function(col) { col }
+                })
+                new_df[[col_name]] <- tryCatch({
+                    as_type(new_df[[col_name]])
+                }, error=function(cond) {
+                    new_df[[col_name]]
+                })
+            }
+        }
+        new_df
+    }
 }
 
 #' Private function for recursively looking for variables
