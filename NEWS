@@ -1,3 +1,10 @@
+VERSION 0.13.0
+------------------------------------------------------------------------
+
+NEW FEATURES
+
+* Added yhat.test_predict and yhat.transform_from_example for type issues
+
 Version 0.12.1
 ------------------------------------------------------------------------
 BUG FIXES
