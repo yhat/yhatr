@@ -248,6 +248,37 @@ yhat.predict <- function(model_name, data, model_owner, silent = TRUE) {
   exception = function(e){stop("Invalid response: are you sure your model is built?")})
 }
 
+#' Test a prediction through the JSONification process
+#'
+#' This function tests model.transform and model.predict on new data by sending
+#' it through a JSONification process before the two stated functions. This
+#' allows users to test their model locally in conditions that are similar to
+#' those after a deployment.
+#'
+#' @param data Data to envoke the model with
+#' @export
+#' @examples
+#'
+#' model.transform <- function(df) {
+#'  df$Sepal.Width_sq <- df$Sepal.Width^2
+#'  df
+#' }
+#' model.predict <- function(df) {
+#'  data.frame("prediction"=predict(fit, df, type="response"))
+#' }
+#' \dontrun{
+#' model.test_predict(iris)
+#' }
+yhat.test_predict <- function(data) {
+  jsonified_data <- rjson::toJSON(data)
+  model_input_data <- jsonlite::fromJSON(jsonified_data)
+  model_input_data <- data.frame(model_input_data, stringsAsFactors=FALSE)
+  print(lapply(model_input_data, class))
+  transformed_data <- model.transform(model_input_data)
+  print(lapply(transformed_data, class))
+  model.predict(transformed_data)
+}
+
 #' Deploy a model to Yhat's servers
 #'
 #' This function takes model.transform and model.predict and creates
@@ -485,15 +516,17 @@ capture.src <- function(funcs){
 #'
 #' @export
 #' @examples
+#' \dontrun{
 #' model.transform <- yhat.transform_from_example(iris)
+#' }
 yhat.transform_from_example <- function(df) {
     if(!is.data.frame(df)) {
         stop("Input must be of class 'data.frame'")
     }
     # capture class types of each column
-    classes <- lapply(data, class)
+    classes <- lapply(df, class)
     factor_classes <- classes[classes == "factor"]
-    factor_levels <- lapply(data[names(factor_classes)], levels)
+    factor_levels <- lapply(df[names(factor_classes)], levels)
     non_factor_classes <- classes[classes != "factor"]
   
     # The thing we're returning is a function
