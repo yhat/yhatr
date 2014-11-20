@@ -166,6 +166,7 @@ yhat.show_models <- function() {
 #' @param model_name the name of the model you want to call
 #' @param data input data for the model
 #' @param model_owner the owner of the model [optional]
+#' @param raw when true, incoming data will NOT be coerced into data.frame
 #' @param silent should output of url to console (via \code{yhat.post})
 #' be silenced? Default is \code{FALSE}.
 #'
@@ -178,7 +179,7 @@ yhat.show_models <- function() {
 #' \dontrun{
 #' yhat.predict_raw("irisModel", iris)
 #' }
-yhat.predict_raw <- function(model_name, data, model_owner, silent = TRUE) {
+yhat.predict_raw <- function(model_name, data, model_owner, raw = FALSE, silent = TRUE) {
   usage <- "usage:  yhat.predict(<model_name>,<data>)"
   if(missing(model_name)){
     stop(paste("Please specify the model name you'd like to call",usage,sep="\n"))
@@ -202,6 +203,11 @@ yhat.predict_raw <- function(model_name, data, model_owner, silent = TRUE) {
   url <- stringr::str_replace_all(url, "^http://", "")
   url <- stringr::str_replace_all(url, "/$", "")
   model_url <- sprintf("http://%s/model/%s/", url, model_name)
+  
+  if (raw==TRUE) {
+    model_url <- paste0(model_url, "?raw=true")
+  }
+
   error_msg <- paste("Invalid response: are you sure your model is built?\nHead over to",
                      model_url,"to see you model's current status.")
   tryCatch(
@@ -209,8 +215,12 @@ yhat.predict_raw <- function(model_name, data, model_owner, silent = TRUE) {
       rsp <- yhat.post(endpoint, data = data, silent = silent)
       httr::content(rsp)
     },
-    error = function(e){stop(error_msg)},
-    exception = function(e){stop(error_msg)}
+    error = function(e){
+      stop(error_msg)
+    },
+    exception = function(e){
+      stop(error_msg)
+    }
   )
 }
 #' Make a prediction using Yhat.
@@ -221,6 +231,7 @@ yhat.predict_raw <- function(model_name, data, model_owner, silent = TRUE) {
 #' @param model_name the name of the model you want to call
 #' @param data input data for the model
 #' @param model_owner the owner of the model [optional]
+#' @param raw when true, incoming data will NOT be coerced into data.frame
 #' @param silent should output of url to console (via \code{yhat.post})
 #' be silenced? Default is \code{FALSE}.
 #'
@@ -235,8 +246,8 @@ yhat.predict_raw <- function(model_name, data, model_owner, silent = TRUE) {
 #' \dontrun{
 #' yhat.predict("irisModel", iris)
 #' }
-yhat.predict <- function(model_name, data, model_owner, silent = TRUE) {
-  raw_rsp <- yhat.predict_raw(model_name, data, model_owner, silent = silent)
+yhat.predict <- function(model_name, data, model_owner, raw = FALSE, silent = TRUE) {
+  raw_rsp <- yhat.predict_raw(model_name, data, model_owner, raw = raw, silent = silent)
   tryCatch({
     if ("result" %in% names(raw_rsp)) {
       data.frame(lapply(raw_rsp$result, unlist))
