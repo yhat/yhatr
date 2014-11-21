@@ -247,7 +247,7 @@ yhat.predict_raw <- function(model_name, data, model_owner, raw_input = FALSE, s
 #' yhat.predict("irisModel", iris)
 #' }
 yhat.predict <- function(model_name, data, model_owner, raw_input = FALSE, silent = TRUE) {
-  raw_rsp <- yhat.predict_raw(model_name, data, model_owner, raw = raw, silent = silent)
+  raw_rsp <- yhat.predict_raw(model_name, data, model_owner, raw_input = raw_input, silent = silent)
   tryCatch({
     if ("result" %in% names(raw_rsp)) {
       data.frame(lapply(raw_rsp$result, unlist))
@@ -255,8 +255,12 @@ yhat.predict <- function(model_name, data, model_owner, raw_input = FALSE, silen
       data.frame(raw_rsp)
     }
   },
-  error = function(e){stop("Invalid response: are you sure your model is built?")},
-  exception = function(e){stop("Invalid response: are you sure your model is built?")})
+  error = function(e){
+    stop("Invalid response: are you sure your model is built?")
+  },
+  exception = function(e){
+    stop("Invalid response: are you sure your model is built?")
+  })
 }
 
 #' Test a prediction through the JSONification process
