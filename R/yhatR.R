@@ -166,7 +166,7 @@ yhat.show_models <- function() {
 #' @param model_name the name of the model you want to call
 #' @param data input data for the model
 #' @param model_owner the owner of the model [optional]
-#' @param raw when true, incoming data will NOT be coerced into data.frame
+#' @param raw_input when true, incoming data will NOT be coerced into data.frame
 #' @param silent should output of url to console (via \code{yhat.post})
 #' be silenced? Default is \code{FALSE}.
 #'
@@ -179,7 +179,7 @@ yhat.show_models <- function() {
 #' \dontrun{
 #' yhat.predict_raw("irisModel", iris)
 #' }
-yhat.predict_raw <- function(model_name, data, model_owner, raw = FALSE, silent = TRUE) {
+yhat.predict_raw <- function(model_name, data, model_owner, raw_input = FALSE, silent = TRUE) {
   usage <- "usage:  yhat.predict(<model_name>,<data>)"
   if(missing(model_name)){
     stop(paste("Please specify the model name you'd like to call",usage,sep="\n"))
@@ -204,7 +204,7 @@ yhat.predict_raw <- function(model_name, data, model_owner, raw = FALSE, silent 
   url <- stringr::str_replace_all(url, "/$", "")
   model_url <- sprintf("http://%s/model/%s/", url, model_name)
   
-  if (raw==TRUE) {
+  if (raw_input==TRUE) {
     model_url <- paste0(model_url, "?raw=true")
   }
 
@@ -231,7 +231,7 @@ yhat.predict_raw <- function(model_name, data, model_owner, raw = FALSE, silent 
 #' @param model_name the name of the model you want to call
 #' @param data input data for the model
 #' @param model_owner the owner of the model [optional]
-#' @param raw when true, incoming data will NOT be coerced into data.frame
+#' @param raw_input when true, incoming data will NOT be coerced into data.frame
 #' @param silent should output of url to console (via \code{yhat.post})
 #' be silenced? Default is \code{FALSE}.
 #'
@@ -246,7 +246,7 @@ yhat.predict_raw <- function(model_name, data, model_owner, raw = FALSE, silent 
 #' \dontrun{
 #' yhat.predict("irisModel", iris)
 #' }
-yhat.predict <- function(model_name, data, model_owner, raw = FALSE, silent = TRUE) {
+yhat.predict <- function(model_name, data, model_owner, raw_input = FALSE, silent = TRUE) {
   raw_rsp <- yhat.predict_raw(model_name, data, model_owner, raw = raw, silent = silent)
   tryCatch({
     if ("result" %in% names(raw_rsp)) {
