@@ -285,6 +285,8 @@ yhat.predict <- function(model_name, data, model_owner, raw_input = FALSE, silen
 #' model.test_predict(iris)
 #' }
 yhat.test_predict <- function(data) {
+  model.transform <- get("model.transform", globalenv())
+  model.predict <- get("model.predict", globalenv())
   jsonified_data <- rjson::toJSON(data)
   model_input_data <- jsonlite::fromJSON(jsonified_data)
   model_input_data <- data.frame(model_input_data, stringsAsFactors=FALSE)

@@ -7,3 +7,4 @@ man/..Rcheck/*
 .Rcheck/*
 *.tar.gz
 *.swp
+yhatr.Rcheck/
