@@ -204,15 +204,16 @@ yhat.predict_raw <- function(model_name, data, model_owner, raw_input = FALSE, s
   url <- stringr::str_replace_all(url, "/$", "")
   model_url <- sprintf("http://%s/model/%s/", url, model_name)
   
+  query <- list()
   if (raw_input==TRUE) {
-    model_url <- paste0(model_url, "?raw_input=true")
+    query[["raw_input"]] <- "true"
   }
 
   error_msg <- paste("Invalid response: are you sure your model is built?\nHead over to",
                      model_url,"to see you model's current status.")
   tryCatch(
     {
-      rsp <- yhat.post(endpoint, data = data, silent = silent)
+      rsp <- yhat.post(endpoint, query = query, data = data, silent = silent)
       httr::content(rsp)
     },
     error = function(e){
@@ -249,7 +250,9 @@ yhat.predict_raw <- function(model_name, data, model_owner, raw_input = FALSE, s
 yhat.predict <- function(model_name, data, model_owner, raw_input = FALSE, silent = TRUE) {
   raw_rsp <- yhat.predict_raw(model_name, data, model_owner, raw_input = raw_input, silent = silent)
   tryCatch({
-    if ("result" %in% names(raw_rsp)) {
+    if (raw_input==TRUE) {
+      raw_rsp
+    } else if ("result" %in% names(raw_rsp)) {
       data.frame(lapply(raw_rsp$result, unlist))
     } else {
       data.frame(raw_rsp)
