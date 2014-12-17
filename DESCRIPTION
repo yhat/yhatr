@@ -1,6 +1,6 @@
 Package: yhatr
 Type: Package
-Title: R binder for the Yhat API
+Title: R Binder for the Yhat API 
 Version: 0.13.2
 Date: 2013-09-04
 Author: Greg Lamp <greg@yhathq.com>, Eric Chiang <eric@yhathq.com>
