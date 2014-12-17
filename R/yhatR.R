@@ -205,7 +205,7 @@ yhat.predict_raw <- function(model_name, data, model_owner, raw_input = FALSE, s
   model_url <- sprintf("http://%s/model/%s/", url, model_name)
   
   if (raw_input==TRUE) {
-    model_url <- paste0(model_url, "?raw=true")
+    model_url <- paste0(model_url, "?raw_input=true")
   }
 
   error_msg <- paste("Invalid response: are you sure your model is built?\nHead over to",
