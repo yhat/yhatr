@@ -1,3 +1,7 @@
+VERSION 0.13.2
+
+* verbose option added to test_predict, default is FALSE
+
 VERSION 0.13.1
 ------------------------------------------------------------------------
 
