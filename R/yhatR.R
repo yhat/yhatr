@@ -274,6 +274,7 @@ yhat.predict <- function(model_name, data, model_owner, raw_input = FALSE, silen
 #' those after a deployment.
 #'
 #' @param data Data to envoke the model with
+#' @param verbose Whether or not to print intermediate results
 #' @export
 #' @examples
 #'
@@ -287,15 +288,19 @@ yhat.predict <- function(model_name, data, model_owner, raw_input = FALSE, silen
 #' \dontrun{
 #' model.test_predict(iris)
 #' }
-yhat.test_predict <- function(data) {
+yhat.test_predict <- function(data, verbose=FALSE) {
   model.transform <- get("model.transform", globalenv())
   model.predict <- get("model.predict", globalenv())
   jsonified_data <- rjson::toJSON(data)
   model_input_data <- jsonlite::fromJSON(jsonified_data)
   model_input_data <- data.frame(model_input_data, stringsAsFactors=FALSE)
-  print(lapply(model_input_data, class))
+  if (verbose) {
+    print(lapply(model_input_data, class))
+  }
   transformed_data <- model.transform(model_input_data)
-  print(lapply(transformed_data, class))
+  if (verbose) {
+    print(lapply(transformed_data, class))
+  }
   model.predict(transformed_data)
 }
 
