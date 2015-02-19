@@ -376,6 +376,7 @@ yhat.deploy <- function(model_name) {
                         body=list(
                            "model_image" = httr::upload_file(image_file),
                            "modelname" = model_name,
+                           "packages" = capture.packages(),
 			   "code" = capture.src(all_funcs)
                                  )
                          )
@@ -531,6 +532,14 @@ capture.src <- function(funcs){
         }
     }
     src
+}
+
+capture.packages <- function(){
+  si <- sessionInfo()
+  pkgs <- names(si$otherPkgs)
+  pkgs <- pkgs[pkgs != "yhatr"]
+  pkgdata <- lapply(pkgs, function(x) list(name=x, version=packageDescription(x)$Version))
+  rjson::toJSON(pkgdata)
 }
 
 #' Generates a model.transform function from an example input data.frame.
