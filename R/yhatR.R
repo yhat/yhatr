@@ -683,6 +683,9 @@ yhat.ls <- function(){
     dependencies <- funcs
     global.vars <- ls(.GlobalEnv,all.names=T)
     # check functions
+    if (! "model.transform" %in% global.vars) {
+      assign("model.transform", I, .GlobalEnv)
+    }
     for (func in funcs){
         if(!(func %in% global.vars)){
             err.msg <- paste("ERROR: You must define \"",func,
