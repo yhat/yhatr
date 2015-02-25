@@ -685,6 +685,7 @@ yhat.ls <- function(){
     # check functions
     if (! "model.transform" %in% global.vars) {
       assign("model.transform", I, .GlobalEnv)
+      global.vars <- ls(.GlobalEnv,all.names=T)
     }
     for (func in funcs){
         if(!(func %in% global.vars)){
