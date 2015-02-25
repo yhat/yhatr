@@ -5,7 +5,7 @@ Version: 0.13.4
 Date: 2013-09-04
 Author: Greg Lamp <greg@yhathq.com>, Eric Chiang <eric@yhathq.com>
 Maintainer: Greg Lamp <greg@yhathq.com>
-Description: yhatr lets you deploy, maintain, and invoke models via the Yhat
+Description: Deploy, maintain, and invoke models via the Yhat
     REST API.
 Depends:
     R (>= 2.12.0)
