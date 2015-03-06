@@ -682,16 +682,13 @@ yhat.ls <- function(){
     funcs <- c("model.transform","model.predict") # function queue to spider
     dependencies <- funcs
     global.vars <- ls(.GlobalEnv,all.names=T)
-    # check functions
-    if (! "model.transform" %in% global.vars) {
-      assign("model.transform", I, .GlobalEnv)
-      global.vars <- ls(.GlobalEnv,all.names=T)
-    }
     for (func in funcs){
         if(!(func %in% global.vars)){
-            err.msg <- paste("ERROR: You must define \"",func,
-                             "\" before deploying a model",sep="")
-            stop(err.msg)
+            if (func!="model.transform") {
+              err.msg <- paste("ERROR: You must define \"",func,
+                               "\" before deploying a model",sep="")
+              stop(err.msg)
+            }
         }
     }
     while(length(funcs) > 0){
