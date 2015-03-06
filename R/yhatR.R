@@ -646,7 +646,7 @@ yhat.spider.block <- function(block,defined.vars=c()){
                     defined.vars <- c(assign.to,defined.vars)
                 } else if (assign.to.type == "language"){
                     # Wait, what?!?! are you assigning to a block of code?
-                    symbols <- c(symbols,yhat.spider.block(assign.from,defined.vars))
+                    symbols <- c(symbols,yhat.spider.block(assign.to, defined.vars))
                 }
             } else {
                 # if the block isn't an assignment, recursively crawl
