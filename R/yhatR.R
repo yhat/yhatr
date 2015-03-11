@@ -679,7 +679,7 @@ yhat.spider.func <- function(func.name){
 #' List all object names which are dependencies of `model.transform`
 #' and `model.predict`
 yhat.ls <- function(){
-    funcs <- c("model.transform","model.predict") # function queue to spider
+    funcs <- c("model.predict") # function queue to spider
     dependencies <- funcs
     global.vars <- ls(.GlobalEnv,all.names=T)
     for (func in funcs){
