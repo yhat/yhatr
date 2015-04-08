@@ -600,7 +600,7 @@ yhat.transform_from_example <- function(df) {
 yhat.spider.block <- function(block,defined.vars=c()){
     # if block is a symbol, just return that symbol
     if(typeof(block) == "symbol") {
-        return c(block)
+        return(c(block))
     }
     symbols <- c()
     n <- length(block)
