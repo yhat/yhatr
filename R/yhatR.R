@@ -598,6 +598,10 @@ yhat.transform_from_example <- function(df) {
 #' @param defined.vars variables which have already been defined within the
 #'          scope of the block. e.g. function argument
 yhat.spider.block <- function(block,defined.vars=c()){
+    # if block is a symbol, just return that symbol
+    if(typeof(block) == "symbol") {
+        return(c(block))
+    }
     symbols <- c()
     n <- length(block)
     if(n == 0) {
@@ -679,7 +683,7 @@ yhat.spider.func <- function(func.name){
 #' List all object names which are dependencies of `model.transform`
 #' and `model.predict`
 yhat.ls <- function(){
-    funcs <- c("model.predict") # function queue to spider
+    funcs <- c("model.predict", "model.transform") # function queue to spider
     dependencies <- funcs
     global.vars <- ls(.GlobalEnv,all.names=T)
     for (func in funcs){
