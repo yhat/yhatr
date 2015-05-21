@@ -311,6 +311,7 @@ yhat.test_predict <- function(data, verbose=FALSE) {
 #' via Yhat's REST API (see \code{\link{yhat.predict}}).
 #'
 #' @param model_name name of your model
+#' @param packages list of packages to install using apt-get
 #' @keywords deploy
 #' @export
 #' @examples
@@ -336,7 +337,7 @@ yhat.test_predict <- function(data, verbose=FALSE) {
 #' \dontrun{
 #' yhat.deploy("irisModel")
 #' }
-yhat.deploy <- function(model_name) {
+yhat.deploy <- function(model_name, packages=c()) {
   if(missing(model_name)){
     stop("Please specify 'model_name' argument")
   }
@@ -377,6 +378,7 @@ yhat.deploy <- function(model_name) {
                            "model_image" = httr::upload_file(image_file),
                            "modelname" = model_name,
                            "packages" = capture.packages(),
+                           "apt_packages" = packages,
 			   "code" = capture.src(all_funcs)
                                  )
                          )
