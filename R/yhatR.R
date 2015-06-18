@@ -1,3 +1,18 @@
+#' Private predicate function that checks if the protocol of a url
+#' is https.
+#'
+#' @param x is a url string
+is.https <- function(x) {
+  m <- regexec("^https?://", x)
+  matches <- regmatches(x, m)
+  if (matches=="https://") {
+    h <- TRUE
+  } else {
+    h <- FALSE
+  }
+  h
+}
+
 #' Private function for performing a GET request
 #'
 #' @param endpoint /path for REST request
@@ -10,9 +25,17 @@ yhat.get <- function(endpoint, query=c()) {
 
   if ("env" %in% names(AUTH)) {
     url <- AUTH[["env"]]
-    url <- stringr::str_replace_all(url, "^http://", "")
+    usetls <- FALSE
+    if (is.https(url)) {
+        usetls <- TRUE
+    }
+    url <- stringr::str_replace_all(url, "^https?://", "")
     url <- stringr::str_replace_all(url, "/$", "")
-    url <- sprintf("http://%s/", url)
+    if (usetls) {
+      url <- sprintf("https://%s/", url)
+    } else {
+      url <- sprintf("http://%s/", url)
+    }
     AUTH <- AUTH[!names(AUTH)=="env"]
     query <- c(query, AUTH)
     query <- paste(names(query), query, collapse="&", sep="=")
@@ -32,12 +55,21 @@ yhat.verify <- function() {
     stop("Please define a yhat.config object")
   })
   env <- AUTH[["env"]]
-  env <- stringr::str_replace_all(env, "^http://", "")
+  usetls <- FALSE
+  if (is.https(env)) {
+    usetls <- TRUE
+  }
+  env <- stringr::str_replace_all(env, "^https?://", "")
   env <- stringr::str_replace_all(env, "/$", "")
   username <- AUTH[["username"]]
   apikey <- AUTH[["apikey"]]
-  url <- sprintf("http://%s/verify?username=%s&apikey=%s",
-                 env, username, apikey)
+  if (usetls) {
+    url <- sprintf("https://%s/verify?username=%s&apikey=%s",
+                   env, username, apikey)
+  } else {
+    url <- sprintf("http://%s/verify?username=%s&apikey=%s",
+                   env, username, apikey)
+  }
   rsp <- httr::POST(url)
   if (httr::http_status(rsp)$category != "success") {
     stop(sprintf("Bad response from http://%s/", env))
@@ -67,9 +99,17 @@ yhat.post <- function(endpoint, query=c(), data, silent = TRUE) {
 
   if ("env" %in% names(AUTH)) {
     url <- AUTH[["env"]]
-    url <- stringr::str_replace_all(url, "^http://", "")
+    usetls <- FALSE
+    if (is.https(url)) {
+      usetls <- TRUE
+    }
+    url <- stringr::str_replace_all(url, "^https?://", "")
     url <- stringr::str_replace_all(url, "/$", "")
-    url <- sprintf("http://%s/", url)
+    if (usetls) { 
+      url <- sprintf("https://%s/", url)
+    } else {
+      url <- sprintf("http://%s/", url)
+    }
     AUTH <- AUTH[!names(AUTH)=="env"]
     query <- c(query, AUTH)
     query <- paste(names(query), query, collapse="&", sep="=")
@@ -200,10 +240,17 @@ yhat.predict_raw <- function(model_name, data, model_owner, raw_input = FALSE, s
 
   # build the model url for the error message
   url <- AUTH[["env"]]
-  url <- stringr::str_replace_all(url, "^http://", "")
+  usetls <- FALSE
+  if (is.https(url)) {
+    usetls <- TRUE
+  }
+  url <- stringr::str_replace_all(url, "^https?://", "")
   url <- stringr::str_replace_all(url, "/$", "")
-  model_url <- sprintf("http://%s/model/%s/", url, model_name)
-  
+  if (usetls) {
+    model_url <- sprintf("https://%s/model/%s/", url, model_name)
+  } else {
+    model_url <- sprintf("http://%s/model/%s/", url, model_name)
+  }
   query <- list()
   if (raw_input==TRUE) {
     query[["raw_input"]] <- "true"
@@ -352,12 +399,20 @@ yhat.deploy <- function(model_name, packages=c()) {
   }
   if ("env" %in% names(AUTH)) {
     env <- AUTH[["env"]]
-    env <- stringr::str_replace_all(env, "^http://", "")
+    usetls <- FALSE
+    if (is.https(env)) {
+      usetls <- TRUE
+    }
+    env <- stringr::str_replace_all(env, "^https?://", "")
     env <- stringr::str_replace_all(env, "/$", "")
     AUTH <- AUTH[!names(AUTH)=="env"]
     query <- AUTH
     query <- paste(names(query), query, collapse="&", sep="=")
-    url <- sprintf("http://%s/deployer/model?%s", env, query)
+    if (usetls) {
+      url <- sprintf("https://%s/deployer/model?%s", env, query)
+    } else {
+      url <- sprintf("http://%s/deployer/model?%s", env, query)
+    }
     image_file <- ".yhatdeployment.img"
     all_objects <- yhat.ls()
     all_funcs <- all_objects[lapply(all_objects, function(name){
