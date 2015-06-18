@@ -177,7 +177,7 @@ check.dependencies <- function() {
 #' yhat.config <- c(
 #'  username = "your username",
 #'  apikey = "your apikey",
-#'  env = "http://cloud.yhathq.com/"
+#'  env = "http://sandbox.yhathq.com/"
 #' )
 #' \dontrun{
 #' yhat.show_models()
@@ -289,7 +289,7 @@ yhat.predict_raw <- function(model_name, data, model_owner, raw_input = FALSE, s
 #' yhat.config <- c(
 #'  username = "your username",
 #'  apikey = "your apikey",
-#'  env = "http://cloud.yhathq.com/"
+#'  env = "http://sandbox.yhathq.com/"
 #' )
 #' \dontrun{
 #' yhat.predict("irisModel", iris)
@@ -365,7 +365,7 @@ yhat.test_predict <- function(data, verbose=FALSE) {
 #' yhat.config <- c(
 #'  username = "your username",
 #'  apikey = "your apikey",
-#'  env = "http://cloud.yhathq.com/"
+#'  env = "http://sandbox.yhathq.com/"
 #' )
 #' iris$Sepal.Width_sq <- iris$Sepal.Width^2
 #' fit <- glm(I(Species)=="virginica" ~ ., data=iris)
@@ -464,7 +464,7 @@ yhat.deploy <- function(model_name, packages=c()) {
 #' yhat.config <- c(
 #'  username = "your username",
 #'  apikey = "your apikey",
-#'  env = "http://cloud.yhathq.com/"
+#'  env = "http://sandbox.yhathq.com/"
 #' )
 #' iris$Sepal.Width_sq <- iris$Sepal.Width^2
 #' fit <- glm(I(Species)=="virginica" ~ ., data=iris)
