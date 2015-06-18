@@ -32,7 +32,9 @@ model.transform <- function(df) {
 model.predict <- function(df) {
  data.frame("prediction"=predict(fit, df, type="response"))
 }
-yhat.deploy.to.file("irisModel")
+\dontrun{
+ yhat.deploy.to.file("irisModel")
+ }
 }
 \keyword{deploy}
 

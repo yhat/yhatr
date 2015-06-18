@@ -480,7 +480,9 @@ yhat.deploy <- function(model_name, packages=c()) {
 #' model.predict <- function(df) {
 #'  data.frame("prediction"=predict(fit, df, type="response"))
 #' }
-#' yhat.deploy.to.file("irisModel")
+#' \dontrun{
+#'  yhat.deploy.to.file("irisModel")
+#'  }
 yhat.deploy.to.file <- function(model_name) {
   if(missing(model_name)){
     stop("Please specify 'model_name' argument")
@@ -535,7 +537,9 @@ yhat.deploy.to.file <- function(model_name) {
 #' model.predict <- function(df) {
 #'  data.frame("prediction"=predict(fit, df, type="response"))
 #' }
-#' yhat.deploy.with.scp("irisModel", "~/path/to/pemfile.pem")
+#' \dontrun{
+#'  yhat.deploy.with.scp("irisModel", "~/path/to/pemfile.pem")
+#' }
 yhat.deploy.with.scp <- function(model_name, pem_path) {
   yhat.deploy.to.file(model_name)
   filename <- paste(model_name, ".yhat", sep="")

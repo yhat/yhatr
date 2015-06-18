@@ -35,7 +35,9 @@ model.transform <- function(df) {
 model.predict <- function(df) {
  data.frame("prediction"=predict(fit, df, type="response"))
 }
-yhat.deploy.with.scp("irisModel", "~/path/to/pemfile.pem")
+\dontrun{
+ yhat.deploy.with.scp("irisModel", "~/path/to/pemfile.pem")
+}
 }
 \keyword{deploy}
 
