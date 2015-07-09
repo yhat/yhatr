@@ -336,7 +336,11 @@ yhat.predict <- function(model_name, data, model_owner, raw_input = FALSE, silen
 #' model.test_predict(iris)
 #' }
 yhat.test_predict <- function(data, verbose=FALSE) {
-  model.transform <- get("model.transform", globalenv())
+  t <- "model.transform"
+  model.transform <- mget(t, globalenv(), ifdidnotget=c(NULL))[[t]]
+  if (is.null(model.transform)) {
+      model.transform <- function(x) { x }
+  }
   model.predict <- get("model.predict", globalenv())
   jsonified_data <- rjson::toJSON(data)
   model_input_data <- jsonlite::fromJSON(jsonified_data)
@@ -414,11 +418,19 @@ yhat.deploy <- function(model_name, packages=c()) {
       url <- sprintf("http://%s/deployer/model?%s", env, query)
     }
     image_file <- ".yhatdeployment.img"
+
     all_objects <- yhat.ls()
+    # if model.transform is not provided give it a default value
+    if (!("model.transform" %in% all_objects)) {
+        model.transform <- function(data) { data }
+        all_objects <- c(all_objects, "model.transform")
+    }
+
     all_funcs <- all_objects[lapply(all_objects, function(name){
       class(globalenv()[[name]])
     }) == "function"]
     save(list=all_objects,file=image_file)
+    save(list=all_objects,file="tmp")
 
     err.msg <- paste("Could not connect to yhat enterprise. Please ensure that your",
                      "specified server is online. Contact info [at] yhathq [dot] com",
@@ -744,18 +756,16 @@ yhat.spider.func <- function(func.name){
 #' List all object names which are dependencies of `model.transform`
 #' and `model.predict`
 yhat.ls <- function(){
-    funcs <- c("model.predict", "model.transform") # function queue to spider
-    dependencies <- funcs
+    funcs <- c("model.predict") # function queue to spider
     global.vars <- ls(.GlobalEnv,all.names=T)
-    for (func in funcs){
-        if(!(func %in% global.vars)){
-            if (func!="model.transform") {
-              err.msg <- paste("ERROR: You must define \"",func,
-                               "\" before deploying a model",sep="")
-              stop(err.msg)
-            }
-        }
+    if("model.transform" %in% global.vars){
+        funcs <- c(funcs, "model.transform")
     }
+    if (!("model.predict" %in% global.vars)){
+        err.msg <- "ERROR: You must define \"model.predict\" before deploying a model"
+        stop(err.msg)
+    }
+    dependencies <- funcs
     while(length(funcs) > 0){
         # pop first function from queue
         func.name <- funcs[[1]]
