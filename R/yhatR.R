@@ -337,7 +337,7 @@ yhat.predict <- function(model_name, data, model_owner, raw_input = FALSE, silen
 #' }
 yhat.test_predict <- function(data, verbose=FALSE) {
   t <- "model.transform"
-  model.transform <- mget(t, globalenv(), ifdidnotget=c(NULL))[[t]]
+  model.transform <- mget(t, globalenv(), ifnotfound=list(NULL))[[t]]
   if (is.null(model.transform)) {
       model.transform <- function(x) { x }
   }
