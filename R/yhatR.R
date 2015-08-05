@@ -430,7 +430,8 @@ yhat.deploy <- function(model_name, packages=c()) {
       class(globalenv()[[name]])
     }) == "function"]
     save(list=all_objects,file=image_file)
-    save(list=all_objects,file="tmp")
+    cat("objects detected\n")
+    print(all_objects)
 
     err.msg <- paste("Could not connect to yhat enterprise. Please ensure that your",
                      "specified server is online. Contact info [at] yhathq [dot] com",
@@ -457,6 +458,7 @@ yhat.deploy <- function(model_name, packages=c()) {
       exception=function(e){ unlink(image_file); stop(err.msg) }
     )
     unlink(image_file)
+    cat("deployment successful\n")
     rsp.df
   } else {
     message("Please specify 'env' parameter in yhat.config.")
