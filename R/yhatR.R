@@ -431,7 +431,13 @@ yhat.deploy <- function(model_name, packages=c()) {
     }) == "function"]
     save(list=all_objects,file=image_file)
     cat("objects detected\n")
-    print(all_objects)
+
+    sizes <- lapply(all_objects, function(name) {
+      format( object.size(globalenv()[[name]]) , units="auto")
+    })
+    sizes <- unlist(sizes)
+    print(data.frame(name=all_objects, size=sizes))
+    cat("\n")
 
     err.msg <- paste("Could not connect to yhat enterprise. Please ensure that your",
                      "specified server is online. Contact info [at] yhathq [dot] com",
