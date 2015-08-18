@@ -139,25 +139,6 @@ check.image.size <- function() {
   # lets get this into a data.frame
   df <- data.frame(unlist(model.size))
   model.size <- data.frame(obj=rownames(df),size.mb=df[[1]] / bytes.in.a.mb)
-  # how many megabytes is the image?
-  total.img.mb <- sum(model.size$size.mb)
-  max.size.mb <- 30
-  if (total.img.mb > max.size.mb) {
-    # check out my R skills brah
-    model.size.string <- paste(capture.output(model.size),collapse="\n")
-    # display object sizes to user
-    err.msg <- paste("Sorry, your model is too big to deploy via HTTP.",
-        "Try reducing the memory demand of your model (for instance convert matrices",
-        "to sparse representations instead of dense ones), or deploy the model using:",
-        "    yhat.deploy.to.file()",
-        "------------------------------",
-        "total image size (mb):",
-        total.img.mb,
-        "model dependencies:",
-        model.size.string,
-        sep="\n")
-    stop(err.msg)
-  }
   model.size
 }
 
