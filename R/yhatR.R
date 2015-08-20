@@ -417,7 +417,7 @@ yhat.deploy <- function(model_name, packages=c()) {
     } else {
       url <- sprintf("http://%s/deployer/model?%s", env, query)
     }
-    image_file <- ".yhatdeployment.img"
+    image_file <- tempfile(pattern="scienceops_deployment")
 
     all_objects <- yhat.ls()
     # if model.transform is not provided give it a default value
@@ -430,7 +430,6 @@ yhat.deploy <- function(model_name, packages=c()) {
       class(globalenv()[[name]])
     }) == "function"]
     save(list=all_objects,file=image_file)
-    save(list=all_objects,file="tmp")
 
     err.msg <- paste("Could not connect to yhat enterprise. Please ensure that your",
                      "specified server is online. Contact info [at] yhathq [dot] com",

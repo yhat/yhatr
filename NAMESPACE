@@ -9,3 +9,5 @@ export(yhat.scaffolding)
 export(yhat.show_models)
 export(yhat.test_predict)
 export(yhat.transform_from_example)
+importFrom("utils", "capture.output", "getAnywhere", "object.size",
+             "packageDescription", "sessionInfo")
