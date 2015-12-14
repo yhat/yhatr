@@ -336,6 +336,103 @@ yhat.test_predict <- function(data, verbose=FALSE) {
   model.predict(transformed_data)
 }
 
+# Create a new environment in order to namespace variables that hold the package state
+yhat <- new.env(parent = emptyenv())
+# Packages that are imported by the model
+yhat$imports <- c("yhatr")
+# Packages that need to be installed for the model to run - this will almost always
+# include all the packages listed in imports
+#yhat$dependencies <- list(list(name="yhatr", version=packageDescription("yhatr")$Version))
+yhat$dependencies <- list(list(name="yhatr", src="CRAN", version="0.13.7"))
+
+#' Import one or more libraries and add them to the Yhat model's
+#' dependency list
+#'
+#' @param name name of the package to be added
+#' @param src source from which the package will be installed on ScienceOps (github or CRAN)
+#' @param version version of the package to be added
+#' @param user Github username associated with the package
+#' @param install Whether the package should also be installed into the model on the
+#' ScienceOps server; this is typically set to False when the package has already been
+#' added to the ScienceOps base image.
+#' @keywords import
+#' @export
+#' @examples
+#' yhat.library(c("rjson", "stringr"))
+#' yhat.library("cats", src="github", user="hilaryparker")
+yhat.library <- function(name, src="CRAN", version=NULL, user=NULL, install=TRUE) {
+  # If a vector of CRAN packages is passed, add each of them
+  if (length(name) > 1) {
+    for (n in name) {
+      yhat.library(n, install=install)
+    }
+    return()
+  }
+
+  if (!src %in% c("CRAN", "github")) {
+    stop(cat(src, "is not a valid package type"))
+  }
+
+
+  if (src == "github") {
+    if (is.null(user)) {
+      stop(cat("no github username specified"))
+    }
+    installName = paste(user, "/", name, sep="")
+  } else {
+    installName = name
+  }
+
+  library(name, character.only = TRUE)
+
+  # If a version wasn't manually specified, get this info from the session
+  if (is.null(version)) {
+    version = packageDescription(name)$Version
+  }
+
+  add.import(name)
+  if (install) {
+    add.dependency(installName, src, version)
+  }
+
+  set.model.require()
+}
+
+#' Private function that adds a package to the list of imports
+#' @param name name of the package to be added
+add.import <- function(name) {
+  if (!name %in% yhat$imports) {
+    # Avoid duplicating imports
+    yhat$imports <- c(yhat$imports, name)
+  }
+}
+
+#' Private function that adds a package to the list of dependencies
+#' that will be installed on the ScienceOps server
+#' @param name name of the package to be installed
+#' @param src source that the package is installed from (CRAN or github)
+#' @param version version of the package
+add.dependency <- function(name, src, version) {
+  # Don't add the dependency if it's already there
+  if (!any(sapply(yhat$dependencies, function(dep) dep$name==name))) {
+    dependencies <- yhat$dependencies
+    dependencies[[length(dependencies)+1]] <- list(name=name, src=src, version=version)
+
+    yhat$dependencies <- dependencies
+  }
+}
+
+#' Private function that generates a model.require function based on
+#' the libraries that have been imported in this session.
+set.model.require <- function() {
+  imports <- yhat$imports
+  model.require <<- function() {
+    for (pkg in imports) {
+      library(pkg, character.only = TRUE)
+    }
+  }
+}
+
 #' Deploy a model to Yhat's servers
 #'
 #' This function takes model.transform and model.predict and creates
@@ -432,7 +529,7 @@ yhat.deploy <- function(model_name, packages=c()) {
                         body=list(
                            "model_image" = httr::upload_file(image_file),
                            "modelname" = model_name,
-                           "packages" = capture.packages(),
+                           "packages" = rjson::toJSON(yhat$dependencies),
                            "apt_packages" = packages,
 			   "code" = capture.src(all_funcs)
                                  )
@@ -594,14 +691,6 @@ capture.src <- function(funcs){
         }
     }
     src
-}
-
-capture.packages <- function(){
-  si <- sessionInfo()
-  pkgs <- names(si$otherPkgs)
-  pkgs <- pkgs[pkgs != "yhatr"]
-  pkgdata <- lapply(pkgs, function(x) list(name=x, version=packageDescription(x)$Version))
-  rjson::toJSON(pkgdata)
 }
 
 #' Generates a model.transform function from an example input data.frame.
