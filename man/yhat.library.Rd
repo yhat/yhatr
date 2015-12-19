@@ -26,8 +26,11 @@ Import one or more libraries and add them to the Yhat model's
 dependency list
 }
 \examples{
+\dontrun{
+yhat.library("MASS")
 yhat.library(c("rjson", "stringr"))
 yhat.library("cats", src="github", user="hilaryparker")
+}
 }
 \keyword{import}
 

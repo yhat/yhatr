@@ -7,7 +7,7 @@
 capture.src(funcs)
 }
 \arguments{
-\item{funcs}{functions to caputre, defaults to required yhat model functions}
+\item{funcs}{functions to capture, defaults to required yhat model functions}
 }
 \description{
 Private function for catpuring the source code of model

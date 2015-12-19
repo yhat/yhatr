@@ -338,12 +338,16 @@ yhat.test_predict <- function(data, verbose=FALSE) {
 
 # Create a new environment in order to namespace variables that hold the package state
 yhat <- new.env(parent = emptyenv())
-# Packages that are imported by the model
-yhat$imports <- c("yhatr")
+
 # Packages that need to be installed for the model to run - this will almost always
 # include all the packages listed in imports
-#yhat$dependencies <- list(list(name="yhatr", version=packageDescription("yhatr")$Version))
-yhat$dependencies <- list(list(name="yhatr", src="CRAN", version="0.13.7"))
+yhat$dependencies <- data.frame(name="yhatr", importName="yhatr", src="CRAN", version=packageDescription("yhatr")$Version, install=TRUE)
+
+# Private function for storing requirements that will be imported on
+# the ScienceOps server
+yhat$model.require <- function() {
+  library("yhatr")
+}
 
 #' Import one or more libraries and add them to the Yhat model's
 #' dependency list
@@ -358,8 +362,11 @@ yhat$dependencies <- list(list(name="yhatr", src="CRAN", version="0.13.7"))
 #' @keywords import
 #' @export
 #' @examples
+#' \dontrun{
+#' yhat.library("MASS")
 #' yhat.library(c("rjson", "stringr"))
 #' yhat.library("cats", src="github", user="hilaryparker")
+#' }
 yhat.library <- function(name, src="CRAN", version=NULL, user=NULL, install=TRUE) {
   # If a vector of CRAN packages is passed, add each of them
   if (length(name) > 1) {
@@ -373,51 +380,62 @@ yhat.library <- function(name, src="CRAN", version=NULL, user=NULL, install=TRUE
     stop(cat(src, "is not a valid package type"))
   }
 
-
   if (src == "github") {
     if (is.null(user)) {
       stop(cat("no github username specified"))
     }
-    installName = paste(user, "/", name, sep="")
+    installName <- paste(user, "/", name, sep="")
   } else {
-    installName = name
+    installName <- name
+  }
+
+  if (grepl("/", name)) {
+    src <- "github"
+    nameAndUser <- unlist(strsplit(name, "/"))
+    user <- nameAndUser[[1]]
+    name <- nameAndUser[[2]]
   }
 
   library(name, character.only = TRUE)
 
   # If a version wasn't manually specified, get this info from the session
   if (is.null(version)) {
-    version = packageDescription(name)$Version
+    version <- packageDescription(name)$Version
   }
 
-  add.import(name)
-  if (install) {
-    add.dependency(installName, src, version)
-  }
+  add.dependency(installName, name, src, version, install)
 
   set.model.require()
 }
 
-#' Private function that adds a package to the list of imports
-#' @param name name of the package to be added
-add.import <- function(name) {
-  if (!name %in% yhat$imports) {
-    # Avoid duplicating imports
-    yhat$imports <- c(yhat$imports, name)
-  }
+#' Removes a library from the Yhat model's dependency list
+#'
+#' @param name of the package to be removed
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' yhat.unload("wesanderson")
+#' }
+yhat.unload <- function(name) {
+  deps <- yhat$dependencies
+  yhat$dependencies <- deps[deps$importName != name,]
+  set.model.require()
 }
 
 #' Private function that adds a package to the list of dependencies
 #' that will be installed on the ScienceOps server
 #' @param name name of the package to be installed
+#' @param importName name under which the package is imported (for a github package, this may be different from the name used to install it)
 #' @param src source that the package is installed from (CRAN or github)
 #' @param version version of the package
-add.dependency <- function(name, src, version) {
+#' @param install whether or not the package should be installed in the model image
+add.dependency <- function(name, importName, src, version, install) {
   # Don't add the dependency if it's already there
-  if (!any(sapply(yhat$dependencies, function(dep) dep$name==name))) {
-    dependencies <- yhat$dependencies
-    dependencies[[length(dependencies)+1]] <- list(name=name, src=src, version=version)
-
+  dependencies <- yhat$dependencies
+  if (!any(dependencies$name == name)) {
+    newRow <- data.frame(name=name, importName=importName, src=src, version=version, install=install)
+    dependencies <- rbind(dependencies, newRow)
     yhat$dependencies <- dependencies
   }
 }
@@ -425,12 +443,29 @@ add.dependency <- function(name, src, version) {
 #' Private function that generates a model.require function based on
 #' the libraries that have been imported in this session.
 set.model.require <- function() {
-  imports <- yhat$imports
-  model.require <<- function() {
+  imports <- yhat$dependencies$importName
+  yhat$model.require <- function() {
     for (pkg in imports) {
       library(pkg, character.only = TRUE)
     }
   }
+}
+
+confirm.deployment <- function() {
+  deps <- yhat$dependencies
+  deps$importName <- NULL
+  cat("Model will be deployed with the following dependencies:\n")
+  print(deps)
+  needsConfirm <- TRUE
+  while (needsConfirm) {
+      sure <- readline("Are you sure you want to deploy? y/n ")
+      if (sure == "n" || sure == "N") {
+        needsConfirm <- FALSE
+        stop("Deployment cancelled")
+      } else if (sure == "y" || sure == "Y") {
+        needsConfirm <- FALSE
+      }
+    }
 }
 
 #' Deploy a model to Yhat's servers
@@ -441,6 +476,7 @@ set.model.require <- function() {
 #'
 #' @param model_name name of your model
 #' @param packages list of packages to install using apt-get
+#' @param confirm boolean indicating whether to prompt before deploying
 #' @keywords deploy
 #' @export
 #' @examples
@@ -466,7 +502,7 @@ set.model.require <- function() {
 #' \dontrun{
 #' yhat.deploy("irisModel")
 #' }
-yhat.deploy <- function(model_name, packages=c()) {
+yhat.deploy <- function(model_name, packages=c(), confirm=TRUE) {
   if(missing(model_name)){
     stop("Please specify 'model_name' argument")
   }
@@ -479,6 +515,8 @@ yhat.deploy <- function(model_name, packages=c()) {
   if (length(AUTH)==0) {
     stop("Please specify your account credentials using yhat.config.")
   }
+
+
   if ("env" %in% names(AUTH)) {
     env <- AUTH[["env"]]
     usetls <- FALSE
@@ -498,16 +536,26 @@ yhat.deploy <- function(model_name, packages=c()) {
     image_file <- tempfile(pattern="scienceops_deployment")
 
     all_objects <- yhat.ls()
+    # Consolidate local environment with global one
+    deployEnv <- new.env(parent = emptyenv())
+    deployEnv$model.require <- yhat$model.require
+    for (obj in all_objects) {
+      deployEnv[[obj]] <- globalenv()[[obj]]
+    }
     # if model.transform is not provided give it a default value
     if (!("model.transform" %in% all_objects)) {
         model.transform <- function(data) { data }
+        deployEnv$model.transform <- function(data) { data }
         all_objects <- c(all_objects, "model.transform")
     }
 
     all_funcs <- all_objects[lapply(all_objects, function(name){
       class(globalenv()[[name]])
     }) == "function"]
-    save(list=all_objects,file=image_file)
+
+    all_objects <- c("model.require", all_objects)
+
+    save(list=all_objects, envir=deployEnv, file=image_file)
     cat("objects detected\n")
 
     sizes <- lapply(all_objects, function(name) {
@@ -517,7 +565,13 @@ yhat.deploy <- function(model_name, packages=c()) {
     print(data.frame(name=all_objects, size=sizes))
     cat("\n")
 
-    err.msg <- paste("Could not connect to yhat enterprise. Please ensure that your",
+    if (confirm) {
+      confirm.deployment()
+    }
+
+    dependencies <- yhat$dependencies[yhat$dependencies$install,]
+
+    err.msg <- paste("Could not connect to ScienceOps. Please ensure that your",
                      "specified server is online. Contact info [at] yhathq [dot] com",
                      "for further support.",
                      "-----------------------",
@@ -529,19 +583,18 @@ yhat.deploy <- function(model_name, packages=c()) {
                         body=list(
                            "model_image" = httr::upload_file(image_file),
                            "modelname" = model_name,
-                           "packages" = rjson::toJSON(yhat$dependencies),
+                           "packages" = jsonlite::toJSON(dependencies),
                            "apt_packages" = packages,
 			   "code" = capture.src(all_funcs)
                                  )
                          )
-      
         js <- httr::content(rsp)
         rsp.df <- data.frame(js)
       },
       error=function(e){ unlink(image_file); stop(err.msg) },
       exception=function(e){ unlink(image_file); stop(err.msg) }
     )
-    unlink(image_file)
+    #unlink(image_file)
     cat("deployment successful\n")
     rsp.df
   } else {
@@ -649,40 +702,17 @@ yhat.deploy.with.scp <- function(model_name, pem_path) {
   NULL
 }
 
-#' Quick function for setting up a basic scaffolding of functions for deploying on Yhat.
-#'
-#' @export
-#' @examples
-#' yhat.scaffolding()
-yhat.scaffolding <- function() {
-  txt <- c(
-    "model_transform <- function(df) {
-  df.transformed <- transform(df, x2=x^2)
-  df.transformed
-}
-model_predict <- function(df) {
-  pred <- predict(df)
-  data.frame('myPrediction' = pred)
-}
-model_require <- function() {
-  require('library1')
-  require('library2')
-}"
-)
-  con <- file("yhatExample.R", open="w")
-  writeLines(txt, con)
-  close(con)
-}
-
 #' Private function for catpuring the source code of model
 #'
-#' @param funcs functions to caputre, defaults to required yhat model functions
+#' @param funcs functions to capture, defaults to required yhat model functions
 capture.src <- function(funcs){
+    yhat$model.require()
     if(missing(funcs)){
-        funcs <- c("model.require","model.transform","model.predict")
+        funcs <- c("model.transform","model.predict")
     }
     global.vars <- ls(.GlobalEnv)
-    src <- "library(yhatr)"
+    src <- paste(capture.output(yhat$model.require),collapse="\n")
+    
     for(func in funcs){
         if(func %in% global.vars){
 	    func.src <- paste(capture.output(.GlobalEnv[[func]]),collapse="\n")
@@ -873,7 +903,7 @@ yhat.ls <- function(){
         }
     }
     if("model.require" %in% global.vars){
-        dependencies <- c("model.require",dependencies)
+        print("Warning: model.require is deprecated as of yhatr 0.13.9 - please use yhat.library to specify model dependencies")
     }
     dependencies
 }

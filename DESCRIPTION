@@ -2,7 +2,7 @@ Package: yhatr
 Type: Package
 Title: R Binder for the Yhat API
 Version: 0.13.9
-Date: 2015-07-29
+Date: 2015-12-17
 Author: Greg Lamp <greg@yhathq.com>, Eric Chiang <eric@yhathq.com>
 Maintainer: Greg Lamp <greg@yhathq.com>
 Description: Deploy, maintain, and invoke models via the Yhat

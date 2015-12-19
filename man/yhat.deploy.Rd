@@ -4,12 +4,14 @@
 \alias{yhat.deploy}
 \title{Deploy a model to Yhat's servers}
 \usage{
-yhat.deploy(model_name, packages = c())
+yhat.deploy(model_name, packages = c(), confirm = TRUE)
 }
 \arguments{
 \item{model_name}{name of your model}
 
 \item{packages}{list of packages to install using apt-get}
+
+\item{confirm}{boolean indicating whether to prompt before deploying}
 }
 \description{
 This function takes model.transform and model.predict and creates

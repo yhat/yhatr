@@ -5,14 +5,18 @@
 \title{Private function that adds a package to the list of dependencies
 that will be installed on the ScienceOps server}
 \usage{
-add.dependency(name, src, version)
+add.dependency(name, importName, src, version, install)
 }
 \arguments{
 \item{name}{name of the package to be installed}
 
+\item{importName}{name under which the package is imported (for a github package, this may be different from the name used to install it)}
+
 \item{src}{source that the package is installed from (CRAN or github)}
 
 \item{version}{version of the package}
+
+\item{install}{whether or not the package should be installed in the model image}
 }
 \description{
 Private function that adds a package to the list of dependencies
