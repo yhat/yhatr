@@ -578,23 +578,22 @@ yhat.deploy <- function(model_name, packages=c(), confirm=TRUE) {
                      "Specified endpoint:",
                      env,
                      sep="\n")
-    tryCatch({
-        rsp <- httr::POST(url, httr::authenticate(AUTH[["username"]], AUTH[["apikey"]], 'basic'),
-                        body=list(
-                           "model_image" = httr::upload_file(image_file),
-                           "modelname" = model_name,
-                           "packages" = jsonlite::toJSON(dependencies),
-                           "apt_packages" = packages,
-			   "code" = capture.src(all_funcs)
-                                 )
-                         )
-        js <- httr::content(rsp)
-        rsp.df <- data.frame(js)
-      },
-      error=function(e){ unlink(image_file); stop(err.msg) },
-      exception=function(e){ unlink(image_file); stop(err.msg) }
+    rsp <- httr::POST(url, httr::authenticate(AUTH[["username"]], AUTH[["apikey"]], 'basic'),
+      body=list(
+      "model_image" = httr::upload_file(image_file),
+        "modelname" = model_name,
+        "packages" = jsonlite::toJSON(dependencies),
+        "apt_packages" = packages,
+		"code" = capture.src(all_funcs)
+      )
     )
-    #unlink(image_file)
+    body <- httr::content(rsp)
+    if (rsp$status_code != 200) {
+      unlink(image_file)
+      stop("deployment error: ", body)
+    }
+    rsp.df <- data.frame(body)
+    unlink(image_file)
     cat("deployment successful\n")
     rsp.df
   } else {
