@@ -30,6 +30,8 @@ dependency list
 yhat.library("MASS")
 yhat.library(c("rjson", "stringr"))
 yhat.library("cats", src="github", user="hilaryparker")
+yhat.library("hilaryparker/cats")
+yhat.library("my_proprietary_package", install=FALSE)
 }
 }
 \keyword{import}

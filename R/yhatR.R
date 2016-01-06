@@ -341,7 +341,7 @@ yhat <- new.env(parent = emptyenv())
 
 # Packages that need to be installed for the model to run - this will almost always
 # include all the packages listed in imports
-yhat$dependencies <- data.frame(name="yhatr", importName="yhatr", src="CRAN", version=packageDescription("yhatr")$Version, install=TRUE)
+yhat$dependencies <- data.frame(name="yhatr", importName="yhatr", src="CRAN", version="0.13.7", install=TRUE)
 
 # Private function for storing requirements that will be imported on
 # the ScienceOps server
@@ -366,6 +366,8 @@ yhat$model.require <- function() {
 #' yhat.library("MASS")
 #' yhat.library(c("rjson", "stringr"))
 #' yhat.library("cats", src="github", user="hilaryparker")
+#' yhat.library("hilaryparker/cats")
+#' yhat.library("my_proprietary_package", install=FALSE)
 #' }
 yhat.library <- function(name, src="CRAN", version=NULL, user=NULL, install=TRUE) {
   # If a vector of CRAN packages is passed, add each of them
@@ -902,7 +904,7 @@ yhat.ls <- function(){
         }
     }
     if("model.require" %in% global.vars){
-        print("Warning: model.require is deprecated as of yhatr 0.13.9 - please use yhat.library to specify model dependencies")
+        stop("Warning: model.require is deprecated as of yhatr 0.13.9 - please use yhat.library to specify model dependencies")
     }
     dependencies
 }
