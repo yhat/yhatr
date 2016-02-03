@@ -71,7 +71,8 @@ yhat.verify <- function() {
                    env, username, apikey)
   }
   rsp <- httr::POST(url)
-  if (httr::http_status(rsp)$category != "success") {
+  if (httr::http_error(rsp)) {
+    cat(httr::content(rsp, "text"), "\n")
     stop(sprintf("Bad response from http://%s/", env))
   }
   status <- httr::content(rsp)$success
@@ -438,6 +439,10 @@ yhat.deploy <- function(model_name, packages=c()) {
                                  )
                          )
       
+        if (httr::http_error(rsp)) {
+          txt <- httr::content(rsp)
+          stop(txt)
+        }
         js <- httr::content(rsp)
         rsp.df <- data.frame(js)
       },
