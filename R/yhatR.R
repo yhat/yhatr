@@ -267,12 +267,11 @@ yhat <- new.env(parent = emptyenv())
 
 # Packages that need to be installed for the model to run - this will almost always
 # include all the packages listed in imports
-yhat$dependencies <- data.frame(name="yhatr", importName="yhatr", src="CRAN", version="0.13.7", install=TRUE)
+yhat$dependencies <- data.frame()
 
 # Private function for storing requirements that will be imported on
 # the ScienceOps server
 yhat$model.require <- function() {
-  library("yhatr")
 }
 
 #' Import one or more libraries and add them to the Yhat model's
