@@ -71,7 +71,7 @@ yhat.verify <- function() {
                    env, username, apikey)
   }
   rsp <- httr::POST(url)
-  if (httr::http_error(rsp)) {
+  if (rsp$status_code != 200) {
     cat(httr::content(rsp, "text"), "\n")
     stop(sprintf("Bad response from http://%s/", env))
   }
@@ -147,39 +147,6 @@ check.image.size <- function() {
 #' 
 check.dependencies <- function() {
   is.function(jsonlite::validate)
-}
-
-#' Shows which models you have deployed on Yhat.
-#'
-#' This function queries the Yhat API and finds the models that have been deployed
-#' for your account.
-#'
-#' @export
-#' @examples
-#' yhat.config <- c(
-#'  username = "your username",
-#'  apikey = "your apikey",
-#'  env = "http://sandbox.yhathq.com/"
-#' )
-#' \dontrun{
-#' yhat.show_models()
-#' }
-#' # some output here
-#' #    username className                  name version
-#' # 1      greg                 MySMSClassifier       1
-#' # 2      greg                 MySMSClassifier       2
-#' # 3      greg                 MySMSClassifier       3
-#' # 4      greg                 MySMSClassifier       4
-yhat.show_models <- function() {
-  rsp <- yhat.get("showmodels")
-  js <- httr::content(rsp)
-  js <- lapply(js$models, function(model) {
-    if (is.null(model$className)) {
-      model$className <- ""
-    }
-    model
-  })
-  plyr::ldply(js, data.frame)
 }
 
 #' Calls Yhat's REST API and returns a JSON document containing both the prediction
@@ -293,48 +260,6 @@ yhat.predict <- function(model_name, data, model_owner, raw_input = FALSE, silen
   exception = function(e){
     stop("Invalid response: are you sure your model is built?")
   })
-}
-
-#' Test a prediction through the JSONification process
-#'
-#' This function tests model.transform and model.predict on new data by sending
-#' it through a JSONification process before the two stated functions. This
-#' allows users to test their model locally in conditions that are similar to
-#' those after a deployment.
-#'
-#' @param data Data to envoke the model with
-#' @param verbose Whether or not to print intermediate results
-#' @export
-#' @examples
-#'
-#' model.transform <- function(df) {
-#'  df$Sepal.Width_sq <- df$Sepal.Width^2
-#'  df
-#' }
-#' model.predict <- function(df) {
-#'  data.frame("prediction"=predict(fit, df, type="response"))
-#' }
-#' \dontrun{
-#' model.test_predict(iris)
-#' }
-yhat.test_predict <- function(data, verbose=FALSE) {
-  t <- "model.transform"
-  model.transform <- mget(t, globalenv(), ifnotfound=list(NULL))[[t]]
-  if (is.null(model.transform)) {
-      model.transform <- function(x) { x }
-  }
-  model.predict <- get("model.predict", globalenv())
-  jsonified_data <- rjson::toJSON(data)
-  model_input_data <- jsonlite::fromJSON(jsonified_data)
-  model_input_data <- data.frame(model_input_data, stringsAsFactors=FALSE)
-  if (verbose) {
-    print(lapply(model_input_data, class))
-  }
-  transformed_data <- model.transform(model_input_data)
-  if (verbose) {
-    print(lapply(transformed_data, class))
-  }
-  model.predict(transformed_data)
 }
 
 # Create a new environment in order to namespace variables that hold the package state
@@ -604,106 +529,6 @@ yhat.deploy <- function(model_name, packages=c(), confirm=TRUE) {
   }
 }
 
-
-#' Deploy a model to a file that you can then upload via the browser.
-#'
-#' This function creates a .yhat file which can be deployed via the browser.
-#' This is useful for larger models (>20 MB).
-#'
-#' @param model_name name of your model
-#' @keywords deploy
-#' @export
-#' @examples
-#' yhat.config <- c(
-#'  username = "your username",
-#'  apikey = "your apikey",
-#'  env = "http://sandbox.yhathq.com/"
-#' )
-#' iris$Sepal.Width_sq <- iris$Sepal.Width^2
-#' fit <- glm(I(Species)=="virginica" ~ ., data=iris)
-#'
-#' model.require <- function() {
-#'  # require("randomForest")
-#' }
-#'
-#' model.transform <- function(df) {
-#'  df$Sepal.Width_sq <- df$Sepal.Width^2
-#'  df
-#' }
-#' model.predict <- function(df) {
-#'  data.frame("prediction"=predict(fit, df, type="response"))
-#' }
-#' \dontrun{
-#'  yhat.deploy.to.file("irisModel")
-#'  }
-yhat.deploy.to.file <- function(model_name) {
-  if(missing(model_name)){
-    stop("Please specify 'model_name' argument")
-  }  
-  if (length(grep("^[A-Za-z_0-9]+$", model_name))==0) {
-    stop("Model name can only contain following characters: A-Za-z_0-9")
-  }
-  AUTH <- get("yhat.config")
-  username <- AUTH[["username"]]
-  apikey <- AUTH[["apikey"]]
-  f <- ".yhatdeployment.img"
-  save(list=yhat.ls(),file=f)
-  img <- RCurl::base64Encode(readBin(f, "raw", file.info(f)[1,"size"]))
-  data <- list(
-    image=img[1],
-    modelName=model_name,
-    className=model_name,
-    username=username,
-    apikey=apikey,
-    language="r"
-  )
-  base::write(rjson::toJSON(data), file=paste(model_name, ".yhat", sep=""))
-  paste("file written to :", paste(model_name, ".yhat", sep=""))
-}
-#' Deploy a model via SCP. For when you want to automate large model uploads.
-#'
-#' For when you have a really big model file and you don't want to mess with
-#' uploading it via the admin console.
-#' This is useful for larger models (>20 MB).
-#'
-#' @param model_name name of your model
-#' @param pem_path path to your pemfile (for AWS)
-#' @keywords deploy
-#' @export
-#' @examples
-#' yhat.config <- c(
-#'  username = "your username",
-#'  apikey = "your apikey",
-#'  env = "http://google.yhathq.com/"
-#' )
-#' iris$Sepal.Width_sq <- iris$Sepal.Width^2
-#' fit <- glm(I(Species)=="virginica" ~ ., data=iris)
-#'
-#' model.require <- function() {
-#'  # require("randomForest")
-#' }
-#'
-#' model.transform <- function(df) {
-#'  df$Sepal.Width_sq <- df$Sepal.Width^2
-#'  df
-#' }
-#' model.predict <- function(df) {
-#'  data.frame("prediction"=predict(fit, df, type="response"))
-#' }
-#' \dontrun{
-#'  yhat.deploy.with.scp("irisModel", "~/path/to/pemfile.pem")
-#' }
-yhat.deploy.with.scp <- function(model_name, pem_path) {
-  yhat.deploy.to.file(model_name)
-  filename <- paste(model_name, ".yhat", sep="")
-  AUTH <- get("yhat.config")
-  servername <- AUTH[["env"]]
-
-  system(paste("scp -i ", pem_path, " ubuntu@", servername, ":~/"))
-  system(paste0("ssh -i ", pem_path, " ubuntu@", servername, " 'sudo mv ~/", filename, " /var/yhat/headquarters/uploads/'"))
-  NULL
-}
-
 #' Private function for catpuring the source code of model
 #'
 #' @param funcs functions to capture, defaults to required yhat model functions
@@ -723,56 +548,6 @@ capture.src <- function(funcs){
         }
     }
     src
-}
-
-#' Generates a model.transform function from an example input data.frame.
-#' Handles columns which need to be type casted further after the initial JSON
-#' to Robject such as factors and ints.
-#'
-#' @param df A data.frame object which mirrors the kind of input to the model. 
-#'
-#' @export
-#' @examples
-#' \dontrun{
-#' model.transform <- yhat.transform_from_example(iris)
-#' }
-yhat.transform_from_example <- function(df) {
-    if(!is.data.frame(df)) {
-        stop("Input must be of class 'data.frame'")
-    }
-    # capture class types of each column
-    classes <- lapply(df, class)
-    factor_classes <- classes[classes == "factor"]
-    factor_levels <- lapply(df[names(factor_classes)], levels)
-    non_factor_classes <- classes[classes != "factor"]
-  
-    # The thing we're returning is a function
-    function(new_df) {
-        col_names <- names(new_df)
-        # factors require the levels to be set to the correct values
-        for(col_name in names(factor_levels)) {
-            if (col_name %in% col_names) {
-                new_df[[col_name]] <- factor(new_df[[col_name]], levels=factor_levels[[col_name]])
-            }    
-        }
-        # for the non factor columns, simply type cast
-        for(col_name in names(non_factor_classes)) {
-            if (col_name %in% col_names) {
-                as_type <- tryCatch({
-                    get(paste("as", non_factor_classes[[col_name]], sep="."))
-                }, error=function(cond) {
-                    # if we can't find the as.[type] function, just leave it alone
-                    function(col) { col }
-                })
-                new_df[[col_name]] <- tryCatch({
-                    as_type(new_df[[col_name]])
-                }, error=function(cond) {
-                    new_df[[col_name]]
-                })
-            }
-        }
-        new_df
-    }
 }
 
 #' Private function for recursively looking for variables
