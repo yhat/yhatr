@@ -2,8 +2,8 @@ Package: yhatr
 Type: Package
 Title: R Binder for the Yhat API
 Version: 0.13.9
-Date: 2015-12-17
-Author: Greg Lamp <greg@yhathq.com>, Eric Chiang <eric@yhathq.com>
+Date: 2016-02-09
+Author: Greg Lamp <greg@yhathq.com>, Brandon Hopkins <dev@yhathq.com>
 Maintainer: Greg Lamp <greg@yhathq.com>
 Description: Deploy, maintain, and invoke models via the Yhat
     REST API.
@@ -12,9 +12,7 @@ Depends:
 URL: https://github.com/yhat/yhatr
 Imports:
     httr,
-    RCurl,
     rjson,
-    plyr,
     jsonlite,
     stringr
 License: FreeBSD
