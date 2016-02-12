@@ -492,7 +492,7 @@ yhat.deploy <- function(model_name, packages=c(), confirm=TRUE) {
     print(data.frame(name=all_objects, size=sizes))
     cat("\n")
 
-    if (confirm) {
+    if (confirm && interactive()) {
       confirm.deployment()
     }
 
