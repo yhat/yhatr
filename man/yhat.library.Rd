@@ -28,7 +28,7 @@ dependency list
 \examples{
 \dontrun{
 yhat.library("MASS")
-yhat.library(c("rjson", "stringr"))
+yhat.library(c("wesanderson", "stringr"))
 yhat.library("cats", src="github", user="hilaryparker")
 yhat.library("hilaryparker/cats")
 yhat.library("my_proprietary_package", install=FALSE)

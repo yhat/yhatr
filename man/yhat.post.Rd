@@ -13,7 +13,7 @@ yhat.post(endpoint, query = c(), data, silent = TRUE)
 
 \item{data}{payload to be converted to raw JSON}
 
-\item{silent}{should output of url to console be silenced? 
+\item{silent}{should output of url to console be silenced?
 Default is \code{FALSE}.}
 }
 \description{

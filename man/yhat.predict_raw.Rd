@@ -6,7 +6,7 @@
 and associated metadata.}
 \usage{
 yhat.predict_raw(model_name, data, model_owner, raw_input = FALSE,
-  silent = TRUE)
+  silent = TRUE, bulk = FALSE)
 }
 \arguments{
 \item{model_name}{the name of the model you want to call}
@@ -19,6 +19,8 @@ yhat.predict_raw(model_name, data, model_owner, raw_input = FALSE,
 
 \item{silent}{should output of url to console (via \code{yhat.post})
 be silenced? Default is \code{FALSE}.}
+
+\item{bulk}{should the bulk api be used Default is \code{FALSE}.}
 }
 \description{
 Calls Yhat's REST API and returns a JSON document containing both the prediction
