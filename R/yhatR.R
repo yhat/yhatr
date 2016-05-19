@@ -89,7 +89,7 @@ yhat.verify <- function() {
 #' @param endpoint /path for REST request
 #' @param query url parameters for request
 #' @param data payload to be converted to raw JSON
-#' @param silent should output of url to console be silenced? 
+#' @param silent should output of url to console be silenced?
 #' Default is \code{FALSE}.
 yhat.post <- function(endpoint, query=c(), data, silent = TRUE) {
   if(!is.logical(silent)) stop("Argument 'silent' must be logical!")
@@ -106,7 +106,7 @@ yhat.post <- function(endpoint, query=c(), data, silent = TRUE) {
     }
     url <- stringr::str_replace_all(url, "^https?://", "")
     url <- stringr::str_replace_all(url, "/$", "")
-    if (usetls) { 
+    if (usetls) {
       url <- sprintf("https://%s/", url)
     } else {
       url <- sprintf("http://%s/", url)
@@ -118,7 +118,20 @@ yhat.post <- function(endpoint, query=c(), data, silent = TRUE) {
     if(silent==FALSE) {
       message(url)
     }
-    httr::POST(url, body = rjson::toJSON(data),
+    # httr::POST(url, body = rjson::toJSON(data),
+    #                config = c(
+    #                  httr::authenticate(AUTH[["username"]], AUTH[["apikey"]], 'basic'),
+    #                  httr::add_headers("Content-Type" = "application/json")
+    #                  )
+    data.json <- ""
+    if (bulk==TRUE) {
+      data.ldjson <- textConnection("data.ldjson", "w")
+      data <- data.frame(name=c("Greg", "Colin", "Austin", "Charlie"))
+      jsonlite::stream_out(data, con = data.ldjson)
+    } else {
+      data.json <- jsonlite::toJSON(data)
+    }
+    httr::POST(url, body = data.json,
                     config = c(
                       httr::authenticate(AUTH[["username"]], AUTH[["apikey"]], 'basic'),
                       httr::add_headers("Content-Type" = "application/json")
@@ -144,7 +157,7 @@ check.image.size <- function() {
 }
 
 #' Checks dependencies and makes sure all are installed.
-#' 
+#'
 check.dependencies <- function() {
   is.function(jsonlite::validate)
 }
@@ -158,6 +171,7 @@ check.dependencies <- function() {
 #' @param raw_input when true, incoming data will NOT be coerced into data.frame
 #' @param silent should output of url to console (via \code{yhat.post})
 #' be silenced? Default is \code{FALSE}.
+#' @param bulk should the bulk api be used Default is \code{FALSE}.
 #'
 #' @export
 #' @examples
@@ -168,7 +182,7 @@ check.dependencies <- function() {
 #' \dontrun{
 #' yhat.predict_raw("irisModel", iris)
 #' }
-yhat.predict_raw <- function(model_name, data, model_owner, raw_input = FALSE, silent = TRUE) {
+yhat.predict_raw <- function(model_name, data, model_owner, raw_input = FALSE, silent = TRUE, bulk = FALSE) {
   usage <- "usage:  yhat.predict(<model_name>,<data>)"
   if(missing(model_name)){
     stop(paste("Please specify the model name you'd like to call",usage,sep="\n"))
@@ -203,6 +217,9 @@ yhat.predict_raw <- function(model_name, data, model_owner, raw_input = FALSE, s
   query <- list()
   if (raw_input==TRUE) {
     query[["raw_input"]] <- "true"
+  }
+  if (bulk==TRUE) {
+    query[["bulk"]] <- "true"
   }
 
   error_msg <- paste("Invalid response: are you sure your model is built?\nHead over to",
@@ -262,6 +279,42 @@ yhat.predict <- function(model_name, data, model_owner, raw_input = FALSE, silen
   })
 }
 
+#' Make bulk predictions using Yhat.
+#'
+#' This function calls Yhat's bulk API and returns a response formatted as a
+#' data frame.
+#'
+#' @param model_name the name of the model you want to call
+#' @param data input rows of data to be scored
+#' @param model_owner the owner of the model [optional]
+#' @param raw_input when true, incoming data will NOT be coerced into data.frame
+#' @param silent should output of url to console (via \code{yhat.post})
+#' be silenced? Default is \code{FALSE}.
+#'
+#' @keywords bulk
+#' @export
+#' @examples
+#' yhat.config <- c(
+#'  username = "your username",
+#'  apikey = "your apikey",
+#'  env = "http://sandbox.yhathq.com/"
+#' )
+#' \dontrun{
+#' yhat.predict_bulk("irisModel", iris)
+#' }
+yhat.predict_bulk <- function(model_name, data, model_owner, raw_input = FALSE, silent = TRUE) {
+  raw_rsp <- yhat.predict_raw(model_name, data, model_owner, raw_input = raw_input, silent = silent, bulk = TRUE)
+  tryCatch({
+    jsonlite::fromJSON(raw_rsp)
+  },
+  error = function(e){
+    stop("Invalid response: are you sure your model is built?")
+  },
+  exception = function(e){
+    stop("Invalid response: are you sure your model is built?")
+  })
+}
+
 # Create a new environment in order to namespace variables that hold the package state
 yhat <- new.env(parent = emptyenv())
 
@@ -289,7 +342,7 @@ yhat$model.require <- function() {
 #' @examples
 #' \dontrun{
 #' yhat.library("MASS")
-#' yhat.library(c("rjson", "stringr"))
+#' yhat.library(c("wesanderson", "stringr"))
 #' yhat.library("cats", src="github", user="hilaryparker")
 #' yhat.library("hilaryparker/cats")
 #' yhat.library("my_proprietary_package", install=FALSE)
@@ -538,7 +591,7 @@ capture.src <- function(funcs){
     }
     global.vars <- ls(.GlobalEnv)
     src <- paste(capture.output(yhat$model.require),collapse="\n")
-    
+
     for(func in funcs){
         if(func %in% global.vars){
 	    func.src <- paste(capture.output(.GlobalEnv[[func]]),collapse="\n")
@@ -576,7 +629,7 @@ yhat.spider.block <- function(block,defined.vars=c()){
         })
         if(!is.valid.symbol){ next }
         node.type <- typeof(node)
-        # if node type is "symbol" then it might be a variable 
+        # if node type is "symbol" then it might be a variable
         if(node.type == "symbol"){
             # if symbol not already defined then it might be a dependency
             if(!any(node == defined.vars)){
