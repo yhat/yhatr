@@ -91,7 +91,7 @@ yhat.verify <- function() {
 #' @param data payload to be converted to raw JSON
 #' @param silent should output of url to console be silenced?
 #' Default is \code{FALSE}.
-yhat.post <- function(endpoint, query=c(), data, silent = TRUE) {
+yhat.post <- function(endpoint, query=c(), data, silent = TRUE, bulk = FALSE) {
   if(!is.logical(silent)) stop("Argument 'silent' must be logical!")
   AUTH <- get("yhat.config")
   if (length(AUTH)==0) {
@@ -123,11 +123,10 @@ yhat.post <- function(endpoint, query=c(), data, silent = TRUE) {
     #                  httr::authenticate(AUTH[["username"]], AUTH[["apikey"]], 'basic'),
     #                  httr::add_headers("Content-Type" = "application/json")
     #                  )
-    data.json <- ""
     if (bulk==TRUE) {
-      data.ldjson <- textConnection("data.ldjson", "w")
-      data <- data.frame(name=c("Greg", "Colin", "Austin", "Charlie"))
-      jsonlite::stream_out(data, con = data.ldjson)
+      out <- textConnection("data.json", "w")
+      jsonlite::stream_out(data, con = out)
+      close(out)
     } else {
       data.json <- jsonlite::toJSON(data)
     }
@@ -226,13 +225,15 @@ yhat.predict_raw <- function(model_name, data, model_owner, raw_input = FALSE, s
                      model_url,"to see you model's current status.")
   tryCatch(
     {
-      rsp <- yhat.post(endpoint, query = query, data = data, silent = silent)
+      rsp <- yhat.post(endpoint, query = query, data = data, silent = silent, bulk = bulk)
       httr::content(rsp)
     },
     error = function(e){
+      print(e)
       stop(error_msg)
     },
     exception = function(e){
+      print(e)
       stop(error_msg)
     }
   )
@@ -305,10 +306,14 @@ yhat.predict <- function(model_name, data, model_owner, raw_input = FALSE, silen
 yhat.predict_bulk <- function(model_name, data, model_owner, raw_input = FALSE, silent = TRUE) {
   raw_rsp <- yhat.predict_raw(model_name, data, model_owner, raw_input = raw_input, silent = silent, bulk = TRUE)
   tryCatch({
-    jsonlite::fromJSON(raw_rsp)
+    f <- file(tmp <- tempfile())
+    write(raw_rsp, f)
+    output <- jsonlite::stream_in(file(tmp))
+    unlink(tmp)
+    output
   },
   error = function(e){
-    stop("Invalid response: are you sure your model is built?")
+    stop(paste("Invalid response: are you sure your model is built?", e))
   },
   exception = function(e){
     stop("Invalid response: are you sure your model is built?")
