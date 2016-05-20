@@ -1,7 +1,7 @@
 Package: yhatr
 Type: Package
 Title: R Binder for the Yhat API
-Version: 0.13.10
+Version: 0.14.0
 Date: 2016-02-09
 Author: Greg Lamp <greg@yhathq.com>, Brandon Hopkins <dev@yhathq.com>
 Maintainer: Greg Lamp <greg@yhathq.com>
@@ -14,6 +14,7 @@ Imports:
     httr,
     rjson,
     jsonlite,
-    stringr
+    stringr,
+    uuid
 License: FreeBSD
 RoxygenNote: 5.0.1
