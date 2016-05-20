@@ -126,7 +126,7 @@ yhat.post <- function(endpoint, query=c(), data, silent = TRUE, bulk = FALSE) {
       jsonlite::stream_out(data, con = out)
       close(out)
     } else {
-      data.json <- rjson::toJSON(data)
+      data.json <- jsonlite::toJSON(data, dataframe = "columns")
     }
     httr::POST(url, body = data.json,
                     config = c(
@@ -309,6 +309,7 @@ yhat.predict_bulk <- function(model_name, data, model_owner, raw_input = FALSE, 
     # write raw_rsp to that file, then read it back in using jsonlite
     f <- file(tmp <- tempfile())
     write(raw_rsp, f)
+    close(f)
     output <- jsonlite::stream_in(file(tmp))
     unlink(tmp)
     output
