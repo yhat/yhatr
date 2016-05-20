@@ -118,11 +118,8 @@ yhat.post <- function(endpoint, query=c(), data, silent = TRUE, bulk = FALSE) {
     if(silent==FALSE) {
       message(url)
     }
-    # httr::POST(url, body = rjson::toJSON(data),
-    #                config = c(
-    #                  httr::authenticate(AUTH[["username"]], AUTH[["apikey"]], 'basic'),
-    #                  httr::add_headers("Content-Type" = "application/json")
-    #                  )
+
+    # bullk sends back line delimited JSON
     if (bulk==TRUE) {
       out <- textConnection("data.json", "w")
       jsonlite::stream_out(data, con = out)
