@@ -304,7 +304,8 @@ yhat.predict_bulk <- function(model_name, data, model_owner, raw_input = FALSE, 
   raw_rsp <- yhat.predict_raw(model_name, data, model_owner, raw_input = raw_input, silent = silent, bulk = TRUE)
   tryCatch({
     # this is weird but it's the only way I could figure out how to turn raw_rsp
-    # into a connection() type (which is basically a stream)
+    # into a connection() type (which is basically a stream). we create a tempfile,
+    # write raw_rsp to that file, then read it back in using jsonlite
     f <- file(tmp <- tempfile())
     write(raw_rsp, f)
     output <- jsonlite::stream_in(file(tmp))
