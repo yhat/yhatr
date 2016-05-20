@@ -128,7 +128,7 @@ yhat.post <- function(endpoint, query=c(), data, silent = TRUE, bulk = FALSE) {
       jsonlite::stream_out(data, con = out)
       close(out)
     } else {
-      data.json <- jsonlite::toJSON(data)
+      data.json <- rjson::toJSON(data)
     }
     httr::POST(url, body = data.json,
                     config = c(
