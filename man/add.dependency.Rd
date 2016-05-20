@@ -10,7 +10,8 @@ add.dependency(name, importName, src, version, install)
 \arguments{
 \item{name}{name of the package to be installed}
 
-\item{importName}{name under which the package is imported (for a github package, this may be different from the name used to install it)}
+\item{importName}{name under which the package is imported (for a github package,
+this may be different from the name used to install it)}
 
 \item{src}{source that the package is installed from (CRAN or github)}
 

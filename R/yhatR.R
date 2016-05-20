@@ -91,6 +91,7 @@ yhat.verify <- function() {
 #' @param data payload to be converted to raw JSON
 #' @param silent should output of url to console be silenced?
 #' Default is \code{FALSE}.
+#' @param bulk is this a bulk style request? Default is \code{FALSE}.
 yhat.post <- function(endpoint, query=c(), data, silent = TRUE, bulk = FALSE) {
   if(!is.logical(silent)) stop("Argument 'silent' must be logical!")
   AUTH <- get("yhat.config")

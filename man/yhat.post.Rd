@@ -4,7 +4,7 @@
 \alias{yhat.post}
 \title{Private function for performing a POST request}
 \usage{
-yhat.post(endpoint, query = c(), data, silent = TRUE)
+yhat.post(endpoint, query = c(), data, silent = TRUE, bulk = FALSE)
 }
 \arguments{
 \item{endpoint}{/path for REST request}
@@ -15,6 +15,8 @@ yhat.post(endpoint, query = c(), data, silent = TRUE)
 
 \item{silent}{should output of url to console be silenced?
 Default is \code{FALSE}.}
+
+\item{bulk}{is this a bulk style request? Default is \code{FALSE}.}
 }
 \description{
 Private function for performing a POST request
