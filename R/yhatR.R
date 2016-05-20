@@ -411,7 +411,8 @@ yhat.unload <- function(name) {
 #' Private function that adds a package to the list of dependencies
 #' that will be installed on the ScienceOps server
 #' @param name name of the package to be installed
-#' @param importName name under which the package is imported (for a github package, this may be different from the name used to install it)
+#' @param importName name under which the package is imported (for a github package,
+#' this may be different from the name used to install it)
 #' @param src source that the package is installed from (CRAN or github)
 #' @param version version of the package
 #' @param install whether or not the package should be installed in the model image
