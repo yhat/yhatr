@@ -558,7 +558,7 @@ yhat.deploy <- function(model_name, packages=c(), confirm=TRUE) {
     }
 
     dependencies <- yhat$dependencies[yhat$dependencies$install,]
-
+    print(url)
     err.msg <- paste("Could not connect to ScienceOps. Please ensure that your",
                      "specified server is online. Contact info [at] yhathq [dot] com",
                      "for further support.",
@@ -588,6 +588,124 @@ yhat.deploy <- function(model_name, packages=c(), confirm=TRUE) {
     message("Please specify 'env' parameter in yhat.config.")
   }
 }
+
+#' Deploy a batch model to Yhat servers
+#'
+#' @param job_name
+#' @param confirm boolean indicating whether to prompt before deploying
+#' @keywords deploy
+#' @export
+#' @examples
+
+yhat.batchDeploy <- function(job_name, confirm=TRUE) {
+  if(missing(job_name)) {
+    stop("Please specify 'job_name' argument")
+  }
+  if (length(grep("^[a-z_0-9]+$", job_name))==0) {
+    stop("Model name can only contain following characters: a-z_0-9")
+  }
+  yhat.verify()
+  AUTH <- get("yhat.config")
+  if (length(AUTH)==0) {
+    stop("Please specify your account credentials using yhat.config.")
+  }
+
+  if ("env" %in% names(AUTH)) {
+    env <- AUTH[["env"]]
+    usetls <- FALSE
+    if (is.https(env)) {
+      usetls <- TRUE
+    }
+    env <- stringr::str_replace_all(env, "^https?://", "")
+    env <- stringr::str_replace_all(env, "/$", "")
+    AUTH <- AUTH[!names(AUTH)=="env"]
+    query <- AUTH
+    query <- paste(names(query), query, collapse="&", sep="=")
+    if (usetls) {
+      url <- sprintf("https://%s/batch/deploy?%s", env, query)
+    } else {
+      url <- sprintf("http://%s/batch/deploy?%s", env, query)
+    }
+
+    all_objects <- yhat.ls()
+
+    all_funcs <- all_objects[lapply(all_objects, function(name){
+      class(globalenv()[[name]])
+    }) == "function"]
+
+    all_objects <- c("model.require", all_objects)
+
+    cat("objects detected\n")
+
+    sizes <- lapply(all_objects, function(name) {
+      format( object.size(globalenv()[[name]]) , units="auto")
+    })
+    sizes <- unlist(sizes)
+    print(data.frame(name=all_objects, size=sizes))
+    cat("\n")
+
+    if (confirm && interactive()) {
+      confirm.deployment()
+    }
+
+    dependencies <- yhat$dependencies[yhat$dependencies$install,]
+
+    err.msg <- paste("Could not connect to ScienceOps. Please ensure that your",
+                     "specified server is online. Contact info [at] yhathq [dot] com",
+                     "for further support.",
+                     "-----------------------",
+                     "Specified endpoint:",
+                     env,
+                     sep="\n")
+
+    # Create the bundle.json and requirements.txt files
+    bundleFrame <- list(
+      code = jsonlite::unbox(capture.src(all_funcs)),
+      language = jsonlite::unbox("R")
+    )
+    bundleJson <- toJSON(bundleFrame)
+    f = file("bundle.json", open="wb")
+    write(bundleJson, f)
+    close(f)
+
+    depList = list(dependencies=dependencies)
+    depJson <- jsonlite::toJSON(depList, dataframe=c("rows"))
+    f = file("requirements.txt", open="wb")
+    write(depJson, f)
+    close(f)
+
+    # Create a tarball
+    tar_name <- "yhat_job.tar.gz"
+    tar(tar_name, c("bundle.json", 'yhat.yaml', 'requirements.txt'), compression = 'gzip', tar="tar")
+
+    print(url)
+    rsp <- httr::POST(url,
+      httr::authenticate(AUTH[["username"]], AUTH[["apikey"]], 'basic'),
+      body=list(
+        "job" = httr::upload_file(tar_name),
+        "job_name" = job_name
+      )
+
+    )
+    body <- httr::content(rsp)
+    if (rsp$status_code != 200) {
+      unlink(tar_name)
+      stop("deployment error: ", body)
+    }
+    rsp.df <- data.frame(body)
+    unlink(tar_name)
+    cat("deployment successful\n")
+    rsp.df
+  } else {
+    message("Please specify 'env' parameter in yhat.config.")
+  }
+
+  ## After the upload, clean up
+  # file.remove(tar_name)
+  # file.remove("bundle.json")
+}
+
+
 
 #' Private function for catpuring the source code of model
 #'
