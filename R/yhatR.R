@@ -660,7 +660,7 @@ yhat.batchDeploy <- function(job_name, confirm=TRUE) {
 
     # Create the bundle.json and requirements.txt files
     bundleFrame <- list(
-      code = jsonlite::unbox(capture.src(all_funcs)),
+      code = jsonlite::unbox(capture.src(all_funcs, capture.model.require=FALSE)),
       language = jsonlite::unbox("R")
     )
     bundleJson <- toJSON(bundleFrame)
@@ -710,19 +710,22 @@ yhat.batchDeploy <- function(job_name, confirm=TRUE) {
 #' Private function for catpuring the source code of model
 #'
 #' @param funcs functions to capture, defaults to required yhat model functions
-capture.src <- function(funcs){
+capture.src <- function(funcs, capture.model.require=TRUE){
     yhat$model.require()
     if(missing(funcs)){
         funcs <- c("model.transform","model.predict")
     }
     global.vars <- ls(.GlobalEnv)
-    src <- paste(capture.output(yhat$model.require),collapse="\n")
+    src <- ""
+    if (capture.model.require==TRUE) {
+      src <- paste(capture.output(yhat$model.require),collapse="\n")
+    }
 
     for(func in funcs){
         if(func %in% global.vars){
-	    func.src <- paste(capture.output(.GlobalEnv[[func]]),collapse="\n")
-            func.src <- paste(func,"<-",func.src)
-            src <- paste(src,func.src,sep="\n\n")
+            func.src <- paste(capture.output(.GlobalEnv[[func]]), collapse="\n")
+            func.src <- paste(func,"<-", func.src)
+            src <- paste(src, func.src,sep="\n\n")
         }
     }
     src
@@ -773,10 +776,10 @@ yhat.spider.block <- function(block,defined.vars=c()){
                 if (assign.from.type == "symbol"){
                     # if symbol not already defined then it might be a dependency
                     if (!any(assign.from == defined.vars)){
-                        symbols <- c(symbols,assign.from)
+                        symbols <- c(symbols, assign.from)
                     }
-                } else if (assign.from.type == "language"){
-                    symbols <- c(symbols,yhat.spider.block(assign.from,defined.vars))
+                } else if (assign.from.type == "language") {
+                    symbols <- c(symbols, yhat.spider.block(assign.from, defined.vars))
                 }
 
                 assign.to <- node[[2]]
