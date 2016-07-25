@@ -663,7 +663,7 @@ yhat.batchDeploy <- function(job_name, confirm=TRUE) {
       code = jsonlite::unbox(capture.src(all_funcs, capture.model.require=FALSE)),
       language = jsonlite::unbox("R")
     )
-    bundleJson <- toJSON(bundleFrame)
+    bundleJson <- jsonlite::toJSON(bundleFrame)
     f = file("bundle.json", open="wb")
     write(bundleJson, f)
     close(f)
