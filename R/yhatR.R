@@ -693,16 +693,15 @@ yhat.batchDeploy <- function(job_name, confirm=TRUE) {
       stop("deployment error: ", body)
     }
     rsp.df <- data.frame(body)
+    # After the upload, clean up
     unlink(tar_name)
+    unlink("bundle.json")
+    unlink("requirements.txt")
     cat("deployment successful\n")
     rsp.df
   } else {
     message("Please specify 'env' parameter in yhat.config.")
   }
-
-  ## After the upload, clean up
-  # file.remove(tar_name)
-  # file.remove("bundle.json")
 }
 
 
