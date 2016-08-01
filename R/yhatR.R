@@ -609,6 +609,10 @@ yhat.batchDeploy <- function(job_name, confirm=TRUE) {
   if (length(AUTH)==0) {
     stop("Please specify your account credentials using yhat.config.")
   }
+  # Check if we have a yhat.yaml file, if we don't then ask the user to try again
+  if (!file.exists('yhat.yaml')) {
+    stop("Please provide a yhat.yaml file in the working directory to specify the job config.")
+  }
 
   if ("env" %in% names(AUTH)) {
     env <- AUTH[["env"]]
