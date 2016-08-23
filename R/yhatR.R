@@ -680,9 +680,16 @@ yhat.batchDeploy <- function(job_name, confirm=TRUE) {
 
     # Create a tarball
     tar_name <- "yhat_job.tar.gz"
-    tar(tar_name, c("bundle.json", 'yhat.yaml', 'requirements.txt'), compression = 'gzip', tar="tar")
+    if (Sys.info()["sysname"]=="Darwin") {
+      # OSX workaround...
+      filenames <- c('bundle.json', 'yhat.yaml', 'requirements.txt')
+      filenames.fmt <- paste(filenames, collapse=" ")
+      cmd <- sprintf("tar -czvf %s %s", tar_name, filenames.fmt)
+      system(cmd)
+    }
+      tar(tar_name, c("bundle.json", 'yhat.yaml', 'requirements.txt'), compression = 'gzip', tar="tar")
+    }
 
-    print(url)
     rsp <- httr::POST(url,
       httr::authenticate(AUTH[["username"]], AUTH[["apikey"]], 'basic'),
       body=list(
