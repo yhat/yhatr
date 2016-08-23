@@ -684,7 +684,7 @@ yhat.batchDeploy <- function(job_name, confirm=TRUE) {
       # OSX workaround...
       filenames <- c('bundle.json', 'yhat.yaml', 'requirements.txt')
       filenames.fmt <- paste(filenames, collapse=" ")
-      cmd <- sprintf("tar -czvf %s %s", tar_name, filenames.fmt)
+      cmd <- sprintf("/usr/bin/tar -czvf %s %s", tar_name, filenames.fmt)
       system(cmd, ignore.stdout = TRUE, ignore.stderr = TRUE)
     } else {
       tar(tar_name, c("bundle.json", 'yhat.yaml', 'requirements.txt'), compression = 'gzip', tar="tar")
