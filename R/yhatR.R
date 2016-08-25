@@ -678,34 +678,41 @@ yhat.batchDeploy <- function(job_name, confirm=TRUE) {
     write(depJson, f)
     close(f)
 
-    # Create a tarball
-    tar_name <- "yhat_job.tar.gz"
-    if (Sys.info()["sysname"]=="Darwin") {
+    # Create the bundle
+    sysName <- "Windows"#Sys.info()["sysname"]
+    zip <- ""
+    if (sysName == "Darwin" ) {
       # OSX workaround...
+      bundle_name <- "yhat_job.tar.gz"
       filenames <- c('bundle.json', 'yhat.yaml', 'requirements.txt')
       filenames.fmt <- paste(filenames, collapse=" ")
-      cmd <- sprintf("/usr/bin/tar -czvf %s %s", tar_name, filenames.fmt)
+      cmd <- sprintf("/usr/bin/tar -czvf %s %s", bundle_name, filenames.fmt)
       system(cmd, ignore.stdout = TRUE, ignore.stderr = TRUE)
+    } else if (sysName == "Windows") {
+      bundle_name <- "yhat_job.zip"
+      zip(bundle_name, c("bundle.json", 'yhat.yaml', 'requirements.txt'))
+      zip <- "true"
     } else {
-      tar(tar_name, c("bundle.json", 'yhat.yaml', 'requirements.txt'), compression = 'gzip', tar="tar")
+      bundle_name <- "yhat_job.tar.gz"
+      tar(bundle_name, c("bundle.json", 'yhat.yaml', 'requirements.txt'), compression = 'gzip', tar="tar")
     }
 
     rsp <- httr::POST(url,
       httr::authenticate(AUTH[["username"]], AUTH[["apikey"]], 'basic'),
       body=list(
-        "job" = httr::upload_file(tar_name),
-        "job_name" = job_name
+        "job" = httr::upload_file(bundle_name),
+        "job_name" = job_name,
+        "zip" = zip
       )
-
     )
     body <- httr::content(rsp)
     if (rsp$status_code != 200) {
-      unlink(tar_name)
+      unlink(bundle_name)
       stop("deployment error: ", body)
     }
     rsp.df <- data.frame(body)
     # After the upload, clean up
-    unlink(tar_name)
+    unlink(bundle_name)
     unlink("bundle.json")
     unlink("requirements.txt")
     cat("deployment successful\n")
