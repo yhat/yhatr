@@ -679,7 +679,7 @@ yhat.batchDeploy <- function(job_name, confirm=TRUE) {
     close(f)
 
     # Create the bundle
-    sysName <- "Windows"#Sys.info()["sysname"]
+    sysName <- Sys.info()["sysname"]
     zip <- ""
     if (sysName == "Darwin" ) {
       # OSX workaround...
