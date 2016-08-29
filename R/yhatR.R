@@ -558,7 +558,6 @@ yhat.deploy <- function(model_name, packages=c(), confirm=TRUE) {
     }
 
     dependencies <- yhat$dependencies[yhat$dependencies$install,]
-
     err.msg <- paste("Could not connect to ScienceOps. Please ensure that your",
                      "specified server is online. Contact info [at] yhathq [dot] com",
                      "for further support.",
@@ -589,22 +588,177 @@ yhat.deploy <- function(model_name, packages=c(), confirm=TRUE) {
   }
 }
 
+#' Deploy a batch model to Yhat servers
+#'
+#' This function takes model.transform and model.predict and creates
+#' a model on Yhat's servers which can be called from any programming language
+#' via Yhat's REST API (see \code{\link{yhat.predict}}).
+#'
+#' @param job_name name of batch job
+#' @param confirm boolean indicating whether to prompt before deploying
+#' @keywords deploy
+#' @export
+#' @examples
+#' yhat.config <- c(
+#'  username = "your username",
+#'  apikey = "your apikey",
+#'  env = "http://sandbox.yhathq.com/"
+#' )
+#' model.predict <- function() {
+#'   name <- "ross"
+#'   greeting <- paste("Hello", name)
+#'   print(greeting)
+#' }
+#' \dontrun{
+#' yhat.batchDeploy("helloworld", confirm=FALSE)
+#' }
+yhat.batchDeploy <- function(job_name, confirm=TRUE) {
+  if(missing(job_name)) {
+    stop("Please specify 'job_name' argument")
+  }
+  if (length(grep("^[a-z_0-9]+$", job_name))==0) {
+    stop("Model name can only contain following characters: a-z_0-9")
+  }
+  yhat.verify()
+  AUTH <- get("yhat.config")
+  if (length(AUTH)==0) {
+    stop("Please specify your account credentials using yhat.config.")
+  }
+  # Check if we have a yhat.yaml file, if we don't then ask the user to try again
+  if (!file.exists('yhat.yaml')) {
+    stop("Please provide a yhat.yaml file in the working directory to specify the job config.")
+  }
+
+  if ("env" %in% names(AUTH)) {
+    env <- AUTH[["env"]]
+    usetls <- FALSE
+    if (is.https(env)) {
+      usetls <- TRUE
+    }
+    env <- stringr::str_replace_all(env, "^https?://", "")
+    env <- stringr::str_replace_all(env, "/$", "")
+    AUTH <- AUTH[!names(AUTH)=="env"]
+    query <- AUTH
+    query <- paste(names(query), query, collapse="&", sep="=")
+    if (usetls) {
+      url <- sprintf("https://%s/batch/deploy?%s", env, query)
+    } else {
+      url <- sprintf("http://%s/batch/deploy?%s", env, query)
+    }
+
+    all_objects <- yhat.ls()
+
+    all_funcs <- all_objects[lapply(all_objects, function(name){
+      class(globalenv()[[name]])
+    }) == "function"]
+
+    all_objects <- c("model.require", all_objects)
+
+    cat("objects detected\n")
+
+    sizes <- lapply(all_objects, function(name) {
+      format( object.size(globalenv()[[name]]) , units="auto")
+    })
+    sizes <- unlist(sizes)
+    print(data.frame(name=all_objects, size=sizes))
+    cat("\n")
+
+    if (confirm && interactive()) {
+      confirm.deployment()
+    }
+
+    dependencies <- yhat$dependencies[yhat$dependencies$install,]
+
+    err.msg <- paste("Could not connect to ScienceOps. Please ensure that your",
+                     "specified server is online. Contact info [at] yhathq [dot] com",
+                     "for further support.",
+                     "-----------------------",
+                     "Specified endpoint:",
+                     env,
+                     sep="\n")
+
+    # Create the bundle.json and requirements.txt files
+    bundleFrame <- list(
+      code = jsonlite::unbox(capture.src(all_funcs, capture.model.require=FALSE)),
+      language = jsonlite::unbox("R")
+    )
+    bundleJson <- jsonlite::toJSON(bundleFrame)
+    f = file("bundle.json", open="wb")
+    write(bundleJson, f)
+    close(f)
+
+    depList = list(dependencies=dependencies)
+    depJson <- jsonlite::toJSON(depList, dataframe=c("rows"))
+    f = file("requirements.txt", open="wb")
+    write(depJson, f)
+    close(f)
+
+    # Create the bundle
+    sysName <- Sys.info()["sysname"]
+    zip <- ""
+    if (sysName == "Darwin" ) {
+      # OSX workaround...
+      bundle_name <- "yhat_job.tar.gz"
+      filenames <- c('bundle.json', 'yhat.yaml', 'requirements.txt')
+      filenames.fmt <- paste(filenames, collapse=" ")
+      cmd <- sprintf("/usr/bin/tar -czvf %s %s", bundle_name, filenames.fmt)
+      system(cmd, ignore.stdout = TRUE, ignore.stderr = TRUE)
+    } else if (sysName == "Windows") {
+      bundle_name <- "yhat_job.zip"
+      zip(bundle_name, c("bundle.json", 'yhat.yaml', 'requirements.txt'))
+      zip <- "true"
+    } else {
+      bundle_name <- "yhat_job.tar.gz"
+      tar(bundle_name, c("bundle.json", 'yhat.yaml', 'requirements.txt'), compression = 'gzip', tar="tar")
+    }
+
+    rsp <- httr::POST(url,
+      httr::authenticate(AUTH[["username"]], AUTH[["apikey"]], 'basic'),
+      body=list(
+        "job" = httr::upload_file(bundle_name),
+        "job_name" = job_name,
+        "zip" = zip
+      )
+    )
+    body <- httr::content(rsp)
+    if (rsp$status_code != 200) {
+      unlink(bundle_name)
+      stop("deployment error: ", body)
+    }
+    rsp.df <- data.frame(body)
+    # After the upload, clean up
+    unlink(bundle_name)
+    unlink("bundle.json")
+    unlink("requirements.txt")
+    cat("deployment successful\n")
+    rsp.df
+  } else {
+    message("Please specify 'env' parameter in yhat.config.")
+  }
+}
+
+
+
 #' Private function for catpuring the source code of model
 #'
 #' @param funcs functions to capture, defaults to required yhat model functions
-capture.src <- function(funcs){
+#' @param capture.model.require flag to capture the model.require function
+capture.src <- function(funcs, capture.model.require=TRUE){
     yhat$model.require()
     if(missing(funcs)){
         funcs <- c("model.transform","model.predict")
     }
     global.vars <- ls(.GlobalEnv)
-    src <- paste(capture.output(yhat$model.require),collapse="\n")
+    src <- ""
+    if (capture.model.require==TRUE) {
+      src <- paste(capture.output(yhat$model.require),collapse="\n")
+    }
 
     for(func in funcs){
         if(func %in% global.vars){
-	    func.src <- paste(capture.output(.GlobalEnv[[func]]),collapse="\n")
-            func.src <- paste(func,"<-",func.src)
-            src <- paste(src,func.src,sep="\n\n")
+            func.src <- paste(capture.output(.GlobalEnv[[func]]), collapse="\n")
+            func.src <- paste(func,"<-", func.src)
+            src <- paste(src, func.src,sep="\n\n")
         }
     }
     src
@@ -655,10 +809,10 @@ yhat.spider.block <- function(block,defined.vars=c()){
                 if (assign.from.type == "symbol"){
                     # if symbol not already defined then it might be a dependency
                     if (!any(assign.from == defined.vars)){
-                        symbols <- c(symbols,assign.from)
+                        symbols <- c(symbols, assign.from)
                     }
-                } else if (assign.from.type == "language"){
-                    symbols <- c(symbols,yhat.spider.block(assign.from,defined.vars))
+                } else if (assign.from.type == "language") {
+                    symbols <- c(symbols, yhat.spider.block(assign.from, defined.vars))
                 }
 
                 assign.to <- node[[2]]
