@@ -591,12 +591,28 @@ yhat.deploy <- function(model_name, packages=c(), confirm=TRUE) {
 
 #' Deploy a batch model to Yhat servers
 #'
-#' @param job_name
+#' This function takes model.transform and model.predict and creates
+#' a model on Yhat's servers which can be called from any programming language
+#' via Yhat's REST API (see \code{\link{yhat.predict}}).
+#'
+#' @param job_name name of batch job
 #' @param confirm boolean indicating whether to prompt before deploying
 #' @keywords deploy
 #' @export
 #' @examples
-
+#' yhat.config <- c(
+#'  username = "your username",
+#'  apikey = "your apikey",
+#'  env = "http://sandbox.yhathq.com/"
+#' )
+#' model.predict <- function() {
+#'   name <- "ross"
+#'   greeting <- paste("Hello", name)
+#'   print(greeting)
+#' }
+#' \dontrun{
+#' yhat.batchDeploy("helloworld", confirm=FALSE)
+#' }
 yhat.batchDeploy <- function(job_name, confirm=TRUE) {
   if(missing(job_name)) {
     stop("Please specify 'job_name' argument")
