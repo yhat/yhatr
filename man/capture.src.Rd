@@ -8,6 +8,8 @@ capture.src(funcs, capture.model.require = TRUE)
 }
 \arguments{
 \item{funcs}{functions to capture, defaults to required yhat model functions}
+
+\item{capture.model.require}{flag to capture the model.require function}
 }
 \description{
 Private function for catpuring the source code of model

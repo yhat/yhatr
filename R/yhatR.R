@@ -743,6 +743,7 @@ yhat.batchDeploy <- function(job_name, confirm=TRUE) {
 #' Private function for catpuring the source code of model
 #'
 #' @param funcs functions to capture, defaults to required yhat model functions
+#' @param capture.model.require flag to capture the model.require function
 capture.src <- function(funcs, capture.model.require=TRUE){
     yhat$model.require()
     if(missing(funcs)){
