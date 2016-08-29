@@ -558,7 +558,6 @@ yhat.deploy <- function(model_name, packages=c(), confirm=TRUE) {
     }
 
     dependencies <- yhat$dependencies[yhat$dependencies$install,]
-    print(url)
     err.msg <- paste("Could not connect to ScienceOps. Please ensure that your",
                      "specified server is online. Contact info [at] yhathq [dot] com",
                      "for further support.",
