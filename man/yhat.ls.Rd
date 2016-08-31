@@ -4,10 +4,13 @@
 \alias{yhat.ls}
 \title{Private function for determining model dependencies}
 \usage{
-yhat.ls()
+yhat.ls(batchMode = FALSE)
+}
+\arguments{
+\item{batchMode}{boolean to capture yhat.batch code for a batch job}
 }
 \description{
 List all object names which are dependencies of `model.transform`
-and `model.predict`
+and `model.predict` or `yhat.batch` if this is a batch mode deploy
 }
 

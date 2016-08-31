@@ -12,9 +12,7 @@ yhat.batchDeploy(job_name, confirm = TRUE)
 \item{confirm}{boolean indicating whether to prompt before deploying}
 }
 \description{
-This function takes model.transform and model.predict and creates
-a model on Yhat's servers which can be called from any programming language
-via Yhat's REST API (see \code{\link{yhat.predict}}).
+This function will deploy your batch model to the yhat servers
 }
 \examples{
 yhat.config <- c(
@@ -22,13 +20,13 @@ yhat.config <- c(
  apikey = "your apikey",
  env = "http://sandbox.yhathq.com/"
 )
-model.predict <- function() {
+yhat.batch <- function() {
   name <- "ross"
   greeting <- paste("Hello", name)
   print(greeting)
 }
 \dontrun{
-yhat.batchDeploy("helloworld", confirm=FALSE)
+yhat.batchDeploy("helloworld")
 }
 }
 \keyword{deploy}

@@ -852,6 +852,8 @@ yhat.spider.func <- function(func.name){
 #'
 #' List all object names which are dependencies of `model.transform`
 #' and `model.predict` or `yhat.batch` if this is a batch mode deploy
+#'
+#' @param batchMode boolean to capture yhat.batch code for a batch job
 yhat.ls <- function(batchMode=FALSE){
     funcs <- c("model.predict") # function queue to spider
     global.vars <- ls(.GlobalEnv,all.names=T)
