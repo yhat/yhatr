@@ -590,9 +590,7 @@ yhat.deploy <- function(model_name, packages=c(), confirm=TRUE) {
 
 #' Deploy a batch model to Yhat servers
 #'
-#' This function takes model.transform and model.predict and creates
-#' a model on Yhat's servers which can be called from any programming language
-#' via Yhat's REST API (see \code{\link{yhat.predict}}).
+#' This function will deploy your batch model to the yhat servers
 #'
 #' @param job_name name of batch job
 #' @param confirm boolean indicating whether to prompt before deploying
@@ -604,13 +602,13 @@ yhat.deploy <- function(model_name, packages=c(), confirm=TRUE) {
 #'  apikey = "your apikey",
 #'  env = "http://sandbox.yhathq.com/"
 #' )
-#' model.predict <- function() {
+#' yhat.batch <- function() {
 #'   name <- "ross"
 #'   greeting <- paste("Hello", name)
 #'   print(greeting)
 #' }
 #' \dontrun{
-#' yhat.batchDeploy("helloworld", confirm=FALSE)
+#' yhat.batchDeploy("helloworld")
 #' }
 yhat.batchDeploy <- function(job_name, confirm=TRUE) {
   if(missing(job_name)) {
@@ -646,7 +644,7 @@ yhat.batchDeploy <- function(job_name, confirm=TRUE) {
       url <- sprintf("http://%s/batch/deploy?%s", env, query)
     }
 
-    all_objects <- yhat.ls()
+    all_objects <- yhat.ls(batchMode=TRUE)
 
     all_funcs <- all_objects[lapply(all_objects, function(name){
       class(globalenv()[[name]])
@@ -696,7 +694,7 @@ yhat.batchDeploy <- function(job_name, confirm=TRUE) {
     # Create the bundle
     sysName <- Sys.info()["sysname"]
     zip <- ""
-    if (sysName == "Darwin" ) {
+    if (sysName == "Darwin" || sysName == "Linux") {
       # OSX workaround...
       bundle_name <- "yhat_job.tar.gz"
       filenames <- c('bundle.json', 'yhat.yaml', 'requirements.txt')
@@ -709,7 +707,7 @@ yhat.batchDeploy <- function(job_name, confirm=TRUE) {
       zip <- "true"
     } else {
       bundle_name <- "yhat_job.tar.gz"
-      tar(bundle_name, c("bundle.json", 'yhat.yaml', 'requirements.txt'), compression = 'gzip', tar="tar")
+      tar(bundle_name, c("bundle.json", 'yhat.yaml', 'requirements.txt'), compression = 'gzip', tar='tar')
     }
 
     rsp <- httr::POST(url,
@@ -853,17 +851,28 @@ yhat.spider.func <- function(func.name){
 #' Private function for determining model dependencies
 #'
 #' List all object names which are dependencies of `model.transform`
-#' and `model.predict`
-yhat.ls <- function(){
+#' and `model.predict` or `yhat.batch` if this is a batch mode deploy
+#'
+#' @param batchMode boolean to capture yhat.batch code for a batch job
+yhat.ls <- function(batchMode=FALSE){
     funcs <- c("model.predict") # function queue to spider
     global.vars <- ls(.GlobalEnv,all.names=T)
-    if("model.transform" %in% global.vars){
+    if ("model.transform" %in% global.vars) {
         funcs <- c(funcs, "model.transform")
     }
-    if (!("model.predict" %in% global.vars)){
+    if (batchMode) {
+      funcs <- c("yhat.batch")
+      if (!("yhat.batch" %in% global.vars)){
+        err.msg <- "ERROR: You must define \"yhat.batch\" before deploying a batch job"
+        stop(err.msg)
+      }
+    } else {
+      if (!("model.predict" %in% global.vars)){
         err.msg <- "ERROR: You must define \"model.predict\" before deploying a model"
         stop(err.msg)
+      }
     }
+
     dependencies <- funcs
     while(length(funcs) > 0){
         # pop first function from queue
