@@ -490,7 +490,7 @@ confirm.deployment <- function() {
 #' \dontrun{
 #' yhat.deploy("irisModel")
 #' }
-yhat.deploy <- function(model_name, packages=c(), confirm=TRUE) {
+yhat.deploy <- function(model_name, packages=c(), confirm=TRUE, custom_image=NULL) {
   if(missing(model_name)){
     stop("Please specify 'model_name' argument")
   }
@@ -568,10 +568,11 @@ yhat.deploy <- function(model_name, packages=c(), confirm=TRUE) {
     rsp <- httr::POST(url, httr::authenticate(AUTH[["username"]], AUTH[["apikey"]], 'basic'),
       body=list(
       "model_image" = httr::upload_file(image_file),
-        "modelname" = model_name,
-        "packages" = jsonlite::toJSON(dependencies),
-        "apt_packages" = packages,
-		"code" = capture.src(all_funcs)
+      "modelname" = model_name,
+      "packages" = jsonlite::toJSON(dependencies),
+      "apt_packages" = packages,
+		  "code" = capture.src(all_funcs),
+      "custom_image" = custom_image
       )
     )
     body <- httr::content(rsp)
