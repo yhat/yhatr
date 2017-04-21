@@ -1,3 +1,7 @@
+VERSION 0.15.1
+------------------------------------------------------------------------
+* Introduce custom_image option to model deploy, default is NULL
+
 VERSION 0.13.9
 ------------------------------------------------------------------------
 
@@ -135,4 +139,3 @@ NEW FEATURES
 
 * upload models to yhat
 * make predictions using yhat
-
