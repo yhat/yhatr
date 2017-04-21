@@ -14,4 +14,3 @@ yhat.get(endpoint, query = c())
 \description{
 Private function for performing a GET request
 }
-

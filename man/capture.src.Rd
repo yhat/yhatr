@@ -14,4 +14,3 @@ capture.src(funcs, capture.model.require = TRUE)
 \description{
 Private function for catpuring the source code of model
 }
-

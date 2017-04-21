@@ -141,6 +141,7 @@ yhat.post <- function(endpoint, query=c(), data, silent = TRUE, bulk = FALSE) {
 
 #' Private function for checking the size of the user's image.
 #'
+#' @importFrom utils object.size
 check.image.size <- function() {
   bytes.in.a.mb <- 2 ^ 20
   model.size <- list()
@@ -354,6 +355,7 @@ yhat$model.require <- function() {
 #' yhat.library("hilaryparker/cats")
 #' yhat.library("my_proprietary_package", install=FALSE)
 #' }
+#' @importFrom utils packageDescription
 yhat.library <- function(name, src="CRAN", version=NULL, user=NULL, install=TRUE) {
   # If a vector of CRAN packages is passed, add each of them
   if (length(name) > 1) {
@@ -465,6 +467,7 @@ confirm.deployment <- function() {
 #' @param model_name name of your model
 #' @param packages list of packages to install using apt-get
 #' @param confirm boolean indicating whether to prompt before deploying
+#' @param custom_image name of the image you'd like your model to use
 #' @keywords deploy
 #' @export
 #' @examples
@@ -611,6 +614,7 @@ yhat.deploy <- function(model_name, packages=c(), confirm=TRUE, custom_image=NUL
 #' \dontrun{
 #' yhat.batchDeploy("helloworld")
 #' }
+#' @importFrom utils tar
 yhat.batchDeploy <- function(job_name, confirm=TRUE) {
   if(missing(job_name)) {
     stop("Please specify 'job_name' argument")
@@ -742,6 +746,7 @@ yhat.batchDeploy <- function(job_name, confirm=TRUE) {
 #'
 #' @param funcs functions to capture, defaults to required yhat model functions
 #' @param capture.model.require flag to capture the model.require function
+#' @importFrom utils capture.output
 capture.src <- function(funcs, capture.model.require=TRUE){
     yhat$model.require()
     if(missing(funcs)){
@@ -836,6 +841,7 @@ yhat.spider.block <- function(block,defined.vars=c()){
 #' Private function for spidering function source code
 #'
 #' @param func.name name of function you want to spider
+#' @importFrom utils getAnywhere
 yhat.spider.func <- function(func.name){
     # parse function to pull out main block and argument names
     func <- parse(text=getAnywhere(func.name))[[2]][[2]]

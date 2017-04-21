@@ -34,4 +34,3 @@ yhat.predict_bulk("irisModel", iris)
 }
 }
 \keyword{bulk}
-

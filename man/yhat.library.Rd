@@ -35,4 +35,3 @@ yhat.library("my_proprietary_package", install=FALSE)
 }
 }
 \keyword{import}
-

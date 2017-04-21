@@ -21,4 +21,3 @@ Default is \code{FALSE}.}
 \description{
 Private function for performing a POST request
 }
-

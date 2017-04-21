@@ -9,4 +9,3 @@ yhat.verify()
 \description{
 Private function for verifying username and apikey
 }
-

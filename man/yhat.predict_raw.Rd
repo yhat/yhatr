@@ -35,4 +35,3 @@ yhat.config <- c(
 yhat.predict_raw("irisModel", iris)
 }
 }
-
