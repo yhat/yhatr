@@ -4,7 +4,8 @@
 \alias{yhat.deploy}
 \title{Deploy a model to Yhat's servers}
 \usage{
-yhat.deploy(model_name, packages = c(), confirm = TRUE)
+yhat.deploy(model_name, packages = c(), confirm = TRUE,
+  custom_image = NULL)
 }
 \arguments{
 \item{model_name}{name of your model}
@@ -12,6 +13,8 @@ yhat.deploy(model_name, packages = c(), confirm = TRUE)
 \item{packages}{list of packages to install using apt-get}
 
 \item{confirm}{boolean indicating whether to prompt before deploying}
+
+\item{custom_image}{name of the image you'd like your model to use}
 }
 \description{
 This function takes model.transform and model.predict and creates
@@ -40,7 +43,7 @@ model.predict <- function(df) {
 }
 \dontrun{
 yhat.deploy("irisModel")
+yhat.deploy("irisModelCustomImage", custom_image="myImage:latest")
 }
 }
 \keyword{deploy}
-

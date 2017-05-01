@@ -34,4 +34,3 @@ yhat.predict("irisModel", iris)
 }
 }
 \keyword{predict}
-

@@ -141,6 +141,7 @@ yhat.post <- function(endpoint, query=c(), data, silent = TRUE, bulk = FALSE) {
 
 #' Private function for checking the size of the user's image.
 #'
+#' @importFrom utils object.size
 check.image.size <- function() {
   bytes.in.a.mb <- 2 ^ 20
   model.size <- list()
@@ -354,6 +355,7 @@ yhat$model.require <- function() {
 #' yhat.library("hilaryparker/cats")
 #' yhat.library("my_proprietary_package", install=FALSE)
 #' }
+#' @importFrom utils packageDescription
 yhat.library <- function(name, src="CRAN", version=NULL, user=NULL, install=TRUE) {
   # If a vector of CRAN packages is passed, add each of them
   if (length(name) > 1) {
@@ -434,6 +436,8 @@ set.model.require <- function() {
   imports <- yhat$dependencies$importName
   yhat$model.require <- function() {
     for (pkg in imports) {
+      print("dependencies")
+      print(name)
       library(pkg, character.only = TRUE)
     }
   }
@@ -465,6 +469,7 @@ confirm.deployment <- function() {
 #' @param model_name name of your model
 #' @param packages list of packages to install using apt-get
 #' @param confirm boolean indicating whether to prompt before deploying
+#' @param custom_image name of the image you'd like your model to use
 #' @keywords deploy
 #' @export
 #' @examples
@@ -489,8 +494,9 @@ confirm.deployment <- function() {
 #' }
 #' \dontrun{
 #' yhat.deploy("irisModel")
+#' yhat.deploy("irisModelCustomImage", custom_image="myImage:latest")
 #' }
-yhat.deploy <- function(model_name, packages=c(), confirm=TRUE) {
+yhat.deploy <- function(model_name, packages=c(), confirm=TRUE, custom_image=NULL) {
   if(missing(model_name)){
     stop("Please specify 'model_name' argument")
   }
@@ -526,8 +532,11 @@ yhat.deploy <- function(model_name, packages=c(), confirm=TRUE) {
     all_objects <- yhat.ls()
     # Consolidate local environment with global one
     deployEnv <- new.env(parent = emptyenv())
+    print("I AM HERE")
     deployEnv$model.require <- yhat$model.require
     for (obj in all_objects) {
+      print("obj")
+      print(obj)
       deployEnv[[obj]] <- globalenv()[[obj]]
     }
     # if model.transform is not provided give it a default value
@@ -540,7 +549,6 @@ yhat.deploy <- function(model_name, packages=c(), confirm=TRUE) {
     all_funcs <- all_objects[lapply(all_objects, function(name){
       class(globalenv()[[name]])
     }) == "function"]
-
     all_objects <- c("model.require", all_objects)
 
     save(list=all_objects, envir=deployEnv, file=image_file)
@@ -558,6 +566,9 @@ yhat.deploy <- function(model_name, packages=c(), confirm=TRUE) {
     }
 
     dependencies <- yhat$dependencies[yhat$dependencies$install,]
+    print("your dependencies")
+    print(yhat$dependencies[yhat$dependencies$install,])
+
     err.msg <- paste("Could not connect to ScienceOps. Please ensure that your",
                      "specified server is online. Contact info [at] yhathq [dot] com",
                      "for further support.",
@@ -568,10 +579,11 @@ yhat.deploy <- function(model_name, packages=c(), confirm=TRUE) {
     rsp <- httr::POST(url, httr::authenticate(AUTH[["username"]], AUTH[["apikey"]], 'basic'),
       body=list(
       "model_image" = httr::upload_file(image_file),
-        "modelname" = model_name,
-        "packages" = jsonlite::toJSON(dependencies),
-        "apt_packages" = packages,
-		"code" = capture.src(all_funcs)
+      "modelname" = model_name,
+      "packages" = jsonlite::toJSON(dependencies),
+      "apt_packages" = packages,
+		  "code" = capture.src(all_funcs),
+      "custom_image" = custom_image
       )
     )
     body <- httr::content(rsp)
@@ -610,6 +622,7 @@ yhat.deploy <- function(model_name, packages=c(), confirm=TRUE) {
 #' \dontrun{
 #' yhat.batchDeploy("helloworld")
 #' }
+#' @importFrom utils tar
 yhat.batchDeploy <- function(job_name, confirm=TRUE) {
   if(missing(job_name)) {
     stop("Please specify 'job_name' argument")
@@ -741,6 +754,7 @@ yhat.batchDeploy <- function(job_name, confirm=TRUE) {
 #'
 #' @param funcs functions to capture, defaults to required yhat model functions
 #' @param capture.model.require flag to capture the model.require function
+#' @importFrom utils capture.output
 capture.src <- function(funcs, capture.model.require=TRUE){
     yhat$model.require()
     if(missing(funcs)){
@@ -835,6 +849,7 @@ yhat.spider.block <- function(block,defined.vars=c()){
 #' Private function for spidering function source code
 #'
 #' @param func.name name of function you want to spider
+#' @importFrom utils getAnywhere
 yhat.spider.func <- function(func.name){
     # parse function to pull out main block and argument names
     func <- parse(text=getAnywhere(func.name))[[2]][[2]]
@@ -891,6 +906,7 @@ yhat.ls <- function(batchMode=FALSE){
                 var <- func.vars[[i]]
                 # is variable already a dependency?
                 if(!(var %in% dependencies)){
+
                     dependencies <- c(var,dependencies)
                     # if this variable is a function we're going to
                     # want to spider it as well

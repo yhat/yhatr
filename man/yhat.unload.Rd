@@ -17,4 +17,3 @@ Removes a library from the Yhat model's dependency list
 yhat.unload("wesanderson")
 }
 }
-

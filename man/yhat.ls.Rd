@@ -13,4 +13,3 @@ yhat.ls(batchMode = FALSE)
 List all object names which are dependencies of `model.transform`
 and `model.predict` or `yhat.batch` if this is a batch mode deploy
 }
-

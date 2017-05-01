@@ -9,4 +9,3 @@ check.dependencies()
 \description{
 Checks dependencies and makes sure all are installed.
 }
-

@@ -30,4 +30,3 @@ yhat.batchDeploy("helloworld")
 }
 }
 \keyword{deploy}
-

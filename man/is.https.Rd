@@ -14,4 +14,3 @@ is.https(x)
 Private predicate function that checks if the protocol of a url
 is https.
 }
-

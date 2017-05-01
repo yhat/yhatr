@@ -23,4 +23,3 @@ this may be different from the name used to install it)}
 Private function that adds a package to the list of dependencies
 that will be installed on the ScienceOps server
 }
-

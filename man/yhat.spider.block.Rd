@@ -15,4 +15,3 @@ scope of the block. e.g. function argument}
 \description{
 Private function for recursively looking for variables
 }
-

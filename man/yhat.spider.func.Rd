@@ -12,4 +12,3 @@ yhat.spider.func(func.name)
 \description{
 Private function for spidering function source code
 }
-

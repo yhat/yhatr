@@ -9,4 +9,3 @@ check.image.size()
 \description{
 Private function for checking the size of the user's image.
 }
-
