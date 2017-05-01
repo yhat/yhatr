@@ -43,6 +43,7 @@ model.predict <- function(df) {
 }
 \dontrun{
 yhat.deploy("irisModel")
+yhat.deploy("irisModelCustomImage", custom_image="myImage:latest")
 }
 }
 \keyword{deploy}

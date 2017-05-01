@@ -436,6 +436,8 @@ set.model.require <- function() {
   imports <- yhat$dependencies$importName
   yhat$model.require <- function() {
     for (pkg in imports) {
+      print("dependencies")
+      print(name)
       library(pkg, character.only = TRUE)
     }
   }
@@ -492,6 +494,7 @@ confirm.deployment <- function() {
 #' }
 #' \dontrun{
 #' yhat.deploy("irisModel")
+#' yhat.deploy("irisModelCustomImage", custom_image="myImage:latest")
 #' }
 yhat.deploy <- function(model_name, packages=c(), confirm=TRUE, custom_image=NULL) {
   if(missing(model_name)){
@@ -529,8 +532,11 @@ yhat.deploy <- function(model_name, packages=c(), confirm=TRUE, custom_image=NUL
     all_objects <- yhat.ls()
     # Consolidate local environment with global one
     deployEnv <- new.env(parent = emptyenv())
+    print("I AM HERE")
     deployEnv$model.require <- yhat$model.require
     for (obj in all_objects) {
+      print("obj")
+      print(obj)
       deployEnv[[obj]] <- globalenv()[[obj]]
     }
     # if model.transform is not provided give it a default value
@@ -543,7 +549,6 @@ yhat.deploy <- function(model_name, packages=c(), confirm=TRUE, custom_image=NUL
     all_funcs <- all_objects[lapply(all_objects, function(name){
       class(globalenv()[[name]])
     }) == "function"]
-
     all_objects <- c("model.require", all_objects)
 
     save(list=all_objects, envir=deployEnv, file=image_file)
@@ -561,6 +566,9 @@ yhat.deploy <- function(model_name, packages=c(), confirm=TRUE, custom_image=NUL
     }
 
     dependencies <- yhat$dependencies[yhat$dependencies$install,]
+    print("your dependencies")
+    print(yhat$dependencies[yhat$dependencies$install,])
+
     err.msg <- paste("Could not connect to ScienceOps. Please ensure that your",
                      "specified server is online. Contact info [at] yhathq [dot] com",
                      "for further support.",
@@ -898,6 +906,7 @@ yhat.ls <- function(batchMode=FALSE){
                 var <- func.vars[[i]]
                 # is variable already a dependency?
                 if(!(var %in% dependencies)){
+
                     dependencies <- c(var,dependencies)
                     # if this variable is a function we're going to
                     # want to spider it as well
