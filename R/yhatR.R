@@ -436,8 +436,6 @@ set.model.require <- function() {
   imports <- yhat$dependencies$importName
   yhat$model.require <- function() {
     for (pkg in imports) {
-      print("dependencies")
-      print(name)
       library(pkg, character.only = TRUE)
     }
   }
