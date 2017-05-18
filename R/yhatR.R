@@ -436,8 +436,6 @@ set.model.require <- function() {
   imports <- yhat$dependencies$importName
   yhat$model.require <- function() {
     for (pkg in imports) {
-      print("dependencies")
-      print(name)
       library(pkg, character.only = TRUE)
     }
   }
@@ -532,11 +530,8 @@ yhat.deploy <- function(model_name, packages=c(), confirm=TRUE, custom_image=NUL
     all_objects <- yhat.ls()
     # Consolidate local environment with global one
     deployEnv <- new.env(parent = emptyenv())
-    print("I AM HERE")
     deployEnv$model.require <- yhat$model.require
     for (obj in all_objects) {
-      print("obj")
-      print(obj)
       deployEnv[[obj]] <- globalenv()[[obj]]
     }
     # if model.transform is not provided give it a default value
@@ -566,8 +561,6 @@ yhat.deploy <- function(model_name, packages=c(), confirm=TRUE, custom_image=NUL
     }
 
     dependencies <- yhat$dependencies[yhat$dependencies$install,]
-    print("your dependencies")
-    print(yhat$dependencies[yhat$dependencies$install,])
 
     err.msg <- paste("Could not connect to ScienceOps. Please ensure that your",
                      "specified server is online. Contact info [at] yhathq [dot] com",
